@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#2d7d46">
-<title>Home Pantry v3.1</title>
+<title>Home Pantry v3.2</title>
 <style>
   :root {
     --green:#2d7d46; --green-light:#e8f5ec; --green-mid:#4caf74;
@@ -216,6 +216,7 @@
   .errand-clear-btn{background:none;border:1.5px solid var(--border);color:var(--text-muted);border-radius:8px;padding:6px 12px;font-size:.8rem;font-weight:600;cursor:pointer}
 
   /* Sync & toast */
+  .love-msg{font-size:.72rem;color:rgba(255,255,255,.8);font-style:italic;margin-top:2px;letter-spacing:.1px}
   .sync-label{font-size:.74rem;opacity:.85;display:flex;align-items:center;gap:5px;margin-top:2px}
   .sync-dot{width:7px;height:7px;border-radius:50%;background:#86efac;flex-shrink:0}
   .sync-dot.syncing{background:#fcd34d}
@@ -230,6 +231,7 @@
   <div class="header-top">
     <div>
       <h1>🛒 Home Pantry</h1>
+      <div class="love-msg" id="love-msg"></div>
       <div class="sync-label">
         <span class="sync-dot" id="sync-dot"></span>
         <span id="sync-label">Loading…</span>
@@ -420,7 +422,7 @@
     </div>
     <button class="btn-danger-full" onclick="clearAllItems()">Clear All Pantry Items</button>
     <button class="btn-danger-full" style="margin-top:8px" onclick="confirmReset()">Reset &amp; Reconnect</button>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v3.1</div>
+    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v3.2</div>
   </div>
 </div>
 
@@ -450,7 +452,9 @@ async function fetchItems() {
     Object.keys(shopTicked).forEach(function(id) {
       if (fresh[id] && fresh[id].onHand >= fresh[id].threshold) { delete shopTicked[id]; delete shopBuyQty[id]; }
     });
-    items = fresh; renderPantry(); renderShop(); setSyncStatus('ok');
+    items = fresh;
+    if (data.errands) { errands = data.errands; renderErrands(); }
+    renderPantry(); renderShop(); setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
 }
 
@@ -1101,9 +1105,7 @@ window.confirmVoiceUpdates = async function() {
 };
 
 // ── ERRANDS ────────────────────────────────────────────────────────────────
-let errands = JSON.parse(localStorage.getItem('pantry_errands') || '[]');
-
-function saveErrands() { localStorage.setItem('pantry_errands', JSON.stringify(errands)); }
+let errands = [];
 
 window.renderErrands = function() {
   const list     = document.getElementById('errand-list');
@@ -1113,7 +1115,7 @@ window.renderErrands = function() {
   const pending  = errands.filter(function(e) { return !e.done; }).length;
   const doneAny  = errands.some(function(e) { return e.done; });
 
-  badge.textContent    = pending > 0 ? ' (' + pending + ')' : '';
+  badge.textContent      = pending > 0 ? ' (' + pending + ')' : '';
   clearBar.style.display = doneAny ? 'block' : 'none';
 
   if (!errands.length) {
@@ -1131,32 +1133,61 @@ window.renderErrands = function() {
   }).join('');
 };
 
-window.addErrand = function() {
+window.addErrand = async function() {
   const input = document.getElementById('errand-input');
   const text  = input.value.trim();
   if (!text) return;
-  errands.unshift({ id: Date.now(), text: text, done: false });
+  const errand = { id: crypto.randomUUID(), text: text, done: false };
+  errands.unshift(errand);
   input.value = '';
-  saveErrands(); renderErrands();
+  renderErrands();
+  await apiPost({ action: 'saveErrand', errand: errand });
 };
 
 window.errandKeydown = function(e) { if (e.key === 'Enter') addErrand(); };
 
-window.toggleErrand = function(i) {
+window.toggleErrand = async function(i) {
   errands[i].done = !errands[i].done;
-  saveErrands(); renderErrands();
+  renderErrands();
+  await apiPost({ action: 'saveErrand', errand: errands[i] });
 };
 
-window.deleteErrand = function(i) {
+window.deleteErrand = async function(i) {
+  const id = errands[i].id;
   errands.splice(i, 1);
-  saveErrands(); renderErrands();
+  renderErrands();
+  await apiPost({ action: 'deleteErrand', id: id });
 };
 
-window.clearDoneErrands = function() {
+window.clearDoneErrands = async function() {
+  const toDelete = errands.filter(function(e) { return e.done; });
   errands = errands.filter(function(e) { return !e.done; });
-  saveErrands(); renderErrands();
+  renderErrands();
   toast('Done items cleared');
+  for (const e of toDelete) { await apiPost({ action: 'deleteErrand', id: e.id }); }
 };
+
+// ── LOVE MESSAGES ──────────────────────────────────────────────────────────
+const LOVE_MSGS = [
+  'Love you, Em ♥️',
+  'Miss you while you\'re in town 💚',
+  'You make our home wonderful ♥️',
+  'Sending a hug from the farm 💚',
+  'You\'re my favourite person ♥️',
+  'Lucky to have you by my side 💚',
+  'Thanks for keeping us all fed ♥️',
+  'Can\'t wait for you to get home 💚',
+  'Our home is better because of you ♥️',
+  'You\'re doing amazing, Em 💚',
+  'Thinking of you today ♥️',
+  'Grateful for you every day 💚',
+  'You\'re wonderful, Em ♥️',
+  'Love you to bits 💚'
+];
+(function() {
+  const day = Math.floor(Date.now() / 86400000);
+  document.getElementById('love-msg').textContent = LOVE_MSGS[day % LOVE_MSGS.length];
+}());
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
