@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#2d7d46">
-<title>Home Pantry v2.4</title>
+<title>Home Pantry v2.5</title>
 <style>
   :root {
     --green:#2d7d46; --green-light:#e8f5ec; --green-mid:#4caf74;
@@ -301,7 +301,7 @@
     </div>
     <button class="btn-danger-full" onclick="clearAllItems()">Clear All Pantry Items</button>
     <button class="btn-danger-full" style="margin-top:8px" onclick="confirmReset()">Reset &amp; Reconnect</button>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v2.4</div>
+    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v2.5</div>
   </div>
 </div>
 
@@ -398,6 +398,20 @@ window.adjustOnHand = async function(id, delta) {
   await apiPost({ action:'save', item:{ id, ...items[id] } });
 };
 
+// Supermarket aisle order + display labels for shopping list
+const SHOP_AISLES = [
+  { cat: 'Produce',       label: '🥦 Fruit & Veg' },
+  { cat: 'Bakery',        label: '🍞 Bakery' },
+  { cat: 'Dairy',         label: '🥛 Dairy & Eggs' },
+  { cat: 'Meat & Fish',   label: '🥩 Meat & Seafood' },
+  { cat: 'Frozen',        label: '🧊 Frozen' },
+  { cat: 'Pantry',        label: '🥫 Pantry & Canned Goods' },
+  { cat: 'Drinks',        label: '🧃 Drinks' },
+  { cat: 'Cleaning',      label: '🧹 Cleaning & Household' },
+  { cat: 'Personal Care', label: '🧴 Personal Care' },
+  { cat: 'Other',         label: '📦 Other' },
+];
+
 // ── Shopping ───────────────────────────────────────────────────────────────
 window.renderShop = function() {
   const shopItems = Object.entries(items).filter(([,v]) => v.onHand < v.threshold);
@@ -410,30 +424,43 @@ window.renderShop = function() {
     list.innerHTML = `<div class="shop-empty"><div class="shop-empty-icon">✅</div><div class="shop-empty-text">All stocked up!</div><div class="shop-empty-sub">Items appear here when stock falls below minimum</div></div>`;
     return;
   }
-  shopItems.sort(([a],[b]) => (shopTicked[a]?1:0)-(shopTicked[b]?1:0));
-  list.innerHTML = shopItems.map(([id,v]) => {
-    const needed = Math.max(0, +(v.restock-v.onHand).toFixed(2));
-    if (shopBuyQty[id]===undefined) shopBuyQty[id] = needed;
-    const ticked = !!shopTicked[id];
-    return `<div class="shop-item ${ticked?'done':''}">
-      <div class="shop-checkbox ${ticked?'checked':''}" onclick="purchaseItem('${id}')"></div>
-      <div class="shop-item-body">
-        <div class="shop-item-name">${esc(v.name)}</div>
-        <div class="shop-item-sub">${v.cat} · Have ${v.onHand} ${esc(v.unit)} · Need ${needed} ${esc(v.unit)}</div>
-        <div class="qty-row">
-          <span class="qty-row-label">Buying:</span>
-          <div class="shop-qty-stepper">
-            <button class="shop-qty-btn" onclick="changeShopQty('${id}',-0.5)">−</button>
-            <div class="shop-qty-val" id="sqty-${id}">${shopBuyQty[id]}</div>
-            <button class="shop-qty-btn" onclick="changeShopQty('${id}',0.5)">+</button>
-          </div>
-          <span class="qty-unit">${esc(v.unit)}</span>
-        </div>
-        ${!ticked?`<div class="tick-hint">↑ Adjust then tick to add to pantry</div>`:`<div class="tick-hint" style="color:var(--text-muted)">Added to pantry ✓</div>`}
-      </div>
-    </div>`;
-  }).join('');
+
+  // Group by category
+  const byCat = {};
+  shopItems.forEach(([id,v]) => { (byCat[v.cat] = byCat[v.cat]||[]).push([id,v]); });
+
+  // Within each category: unticked first, then ticked
+  Object.values(byCat).forEach(arr => arr.sort(([a],[b]) => (shopTicked[a]?1:0)-(shopTicked[b]?1:0)));
+
+  list.innerHTML = SHOP_AISLES.filter(a => byCat[a.cat]).map(a => `
+    <div class="cat-section">
+      <div class="cat-header">${a.label}</div>
+      ${byCat[a.cat].map(([id,v]) => shopItemHtml(id,v)).join('')}
+    </div>`).join('');
 };
+
+function shopItemHtml(id, v) {
+  const needed = Math.max(0, +(v.restock-v.onHand).toFixed(2));
+  if (shopBuyQty[id]===undefined) shopBuyQty[id] = needed;
+  const ticked = !!shopTicked[id];
+  return `<div class="shop-item ${ticked?'done':''}">
+    <div class="shop-checkbox ${ticked?'checked':''}" onclick="purchaseItem('${id}')"></div>
+    <div class="shop-item-body">
+      <div class="shop-item-name">${esc(v.name)}</div>
+      <div class="shop-item-sub">Have ${v.onHand} ${esc(v.unit)} · Need ${needed} ${esc(v.unit)}</div>
+      <div class="qty-row">
+        <span class="qty-row-label">Buying:</span>
+        <div class="shop-qty-stepper">
+          <button class="shop-qty-btn" onclick="changeShopQty('${id}',-0.5)">−</button>
+          <div class="shop-qty-val" id="sqty-${id}">${shopBuyQty[id]}</div>
+          <button class="shop-qty-btn" onclick="changeShopQty('${id}',0.5)">+</button>
+        </div>
+        <span class="qty-unit">${esc(v.unit)}</span>
+      </div>
+      ${!ticked?`<div class="tick-hint">↑ Adjust then tick to add to pantry</div>`:`<div class="tick-hint" style="color:var(--text-muted)">Added to pantry ✓</div>`}
+    </div>
+  </div>`;
+}
 
 window.changeShopQty = function(id, delta) {
   shopBuyQty[id] = Math.max(0, +((shopBuyQty[id]||0)+delta).toFixed(2));
