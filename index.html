@@ -88,7 +88,7 @@
   .shop-item-info { flex: 1; min-width: 0; }
   .shop-item-name { font-size: .95rem; font-weight: 600; }
   .shop-item-sub { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
-  .shop-qty-row { display: flex; align-items: center; gap: 6px; }
+  .shop-qty-row { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
   .shop-qty-label { font-size: .75rem; color: var(--text-muted); }
   .shop-qty-input { width: 54px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 7px; text-align: center; font-size: .95rem; font-weight: 700; }
   .shop-qty-input:focus { outline: none; border-color: var(--green); }
@@ -120,18 +120,6 @@
   .btn-secondary { padding: 13px 20px; background: var(--grey-light); color: var(--text); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
   .btn-danger { padding: 13px 20px; background: var(--red-light); color: var(--red); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
 
-  /* ── Toast ── */
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 18px; border-radius: 24px; font-size: .88rem; font-weight: 600; z-index: 300; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
-  .toast.show { opacity: 1; }
-
-  /* ── Empty state ── */
-  .pantry-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-
-  /* ── Sync indicator ── */
-  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #86efac; display: inline-block; margin-right: 5px; }
-  .sync-dot.offline { background: #fca5a5; }
-  .sync-label { font-size: .75rem; opacity: .85; display: flex; align-items: center; }
-
   /* ── Setup screen ── */
   #setup-screen { display: none; position: fixed; inset: 0; background: #f9fafb; z-index: 500; overflow-y: auto; padding: 32px 20px; }
   #setup-screen.visible { display: block; }
@@ -141,12 +129,23 @@
   .setup-card p { text-align: center; color: var(--text-muted); font-size: .88rem; margin-bottom: 24px; }
   .setup-step { background: var(--grey-light); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
   .setup-step h3 { font-size: .9rem; font-weight: 700; margin-bottom: 6px; }
-  .setup-step p, .setup-step li { font-size: .82rem; color: var(--text-muted); line-height: 1.5; }
+  .setup-step p, .setup-step li { font-size: .82rem; color: var(--text-muted); line-height: 1.6; }
   .setup-step ol { padding-left: 18px; }
-  .setup-step code { background: #e5e7eb; padding: 1px 5px; border-radius: 4px; font-size: .8rem; }
-  .setup-config { width: 100%; font-family: monospace; font-size: .78rem; padding: 12px; border: 1.5px solid var(--border); border-radius: 9px; background: #1f2937; color: #86efac; min-height: 200px; resize: vertical; }
+  .setup-step code { background: #e5e7eb; padding: 1px 6px; border-radius: 4px; font-size: .8rem; font-family: monospace; }
+  .url-input { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: .85rem; font-family: monospace; margin-top: 8px; }
+  .url-input:focus { outline: none; border-color: var(--green); }
   .btn-setup { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 12px; }
-  .setup-error { color: var(--red); font-size: .82rem; margin-top: 6px; display: none; }
+  .setup-error { color: var(--red); font-size: .82rem; margin-top: 8px; display: none; }
+
+  /* ── Toast ── */
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 18px; border-radius: 24px; font-size: .88rem; font-weight: 600; z-index: 300; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  /* ── Sync indicator ── */
+  .sync-label { font-size: .75rem; opacity: .85; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #86efac; flex-shrink: 0; }
+  .sync-dot.syncing { background: #fcd34d; }
+  .sync-dot.offline { background: #fca5a5; }
 </style>
 </head>
 <body>
@@ -156,42 +155,37 @@
   <div class="setup-card">
     <div class="setup-logo">🛒</div>
     <h1>Home Pantry Setup</h1>
-    <p>One-time Firebase configuration to enable real-time sync between phones</p>
+    <p>One-time setup — paste your Apps Script URL to connect to Google Sheets</p>
 
     <div class="setup-step">
-      <h3>Step 1 — Create a Firebase project</h3>
+      <h3>Step 1 — Open the Google Sheet</h3>
+      <p>Go to your Home Pantry Google Sheet → click <strong>Extensions → Apps Script</strong></p>
+    </div>
+
+    <div class="setup-step">
+      <h3>Step 2 — Paste the script</h3>
+      <p>Delete any existing code, paste the contents of <code>appsscript.js</code>, then click <strong>Save</strong> (the floppy disk icon)</p>
+    </div>
+
+    <div class="setup-step">
+      <h3>Step 3 — Deploy</h3>
       <ol>
-        <li>Go to <strong>console.firebase.google.com</strong></li>
-        <li>Click <strong>Add project</strong> → name it "Home Pantry" → Create</li>
-        <li>Once created, click the <strong>Web icon (&lt;/&gt;)</strong> to add a web app</li>
-        <li>Register the app (name doesn't matter), skip Firebase Hosting</li>
-        <li>Copy the <code>firebaseConfig</code> object shown</li>
+        <li>Click <strong>Deploy → New deployment</strong></li>
+        <li>Click the gear ⚙️ next to "Select type" → choose <strong>Web app</strong></li>
+        <li>Set <strong>Execute as: Me</strong></li>
+        <li>Set <strong>Who has access: Anyone</strong></li>
+        <li>Click <strong>Deploy</strong> → authorise when prompted</li>
+        <li>Copy the <strong>Web app URL</strong></li>
       </ol>
     </div>
 
     <div class="setup-step">
-      <h3>Step 2 — Enable Firestore</h3>
-      <ol>
-        <li>In the left sidebar → <strong>Build → Firestore Database</strong></li>
-        <li>Click <strong>Create database</strong> → Start in <strong>test mode</strong> → Next → Enable</li>
-      </ol>
+      <h3>Step 4 — Paste the URL below</h3>
+      <input class="url-input" id="url-input" type="url" placeholder="https://script.google.com/macros/s/...">
     </div>
 
-    <div class="setup-step">
-      <h3>Step 3 — Paste your config below</h3>
-      <p>Paste the entire <code>firebaseConfig = { ... }</code> block or just the JSON object:</p>
-    </div>
-
-    <textarea class="setup-config" id="config-input" placeholder='{
-  "apiKey": "AIza...",
-  "authDomain": "your-app.firebaseapp.com",
-  "projectId": "your-app",
-  "storageBucket": "your-app.appspot.com",
-  "messagingSenderId": "123456789",
-  "appId": "1:123:web:abc..."
-}'></textarea>
     <div class="setup-error" id="setup-error"></div>
-    <button class="btn-setup" onclick="saveConfig()">Connect & Launch App</button>
+    <button class="btn-setup" onclick="saveUrl()">Connect & Launch App</button>
   </div>
 </div>
 
@@ -202,15 +196,19 @@
     <div class="header-top">
       <div>
         <h1>🛒 Home Pantry</h1>
-        <span class="sync-label"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting…</span></span>
+        <div class="sync-label">
+          <span class="sync-dot" id="sync-dot"></span>
+          <span id="sync-label">Loading…</span>
+        </div>
       </div>
       <div class="header-actions">
+        <button class="btn-icon" onclick="fetchItems()">↻</button>
         <button class="btn-icon" onclick="showSettings()">⚙️</button>
       </div>
     </div>
     <div class="tabs">
       <div class="tab active" id="tab-pantry" onclick="switchTab('pantry')">Pantry</div>
-      <div class="tab" id="tab-shop" onclick="switchTab('shop')">Shopping List <span id="shop-badge"></span></div>
+      <div class="tab" id="tab-shop" onclick="switchTab('shop')">Shopping List<span id="shop-badge"></span></div>
     </div>
   </div>
 
@@ -241,7 +239,6 @@
   </div>
 
   <button class="fab" id="fab" onclick="openAddModal()">+</button>
-
 </div>
 
 <!-- ══ ITEM MODAL ══ -->
@@ -250,7 +247,6 @@
     <div class="modal-handle"></div>
     <h2 id="modal-title">Add Item</h2>
     <input type="hidden" id="modal-id">
-
     <div class="form-group">
       <label class="form-label">Item Name</label>
       <input class="form-input" id="f-name" type="text" placeholder="e.g. Milk">
@@ -259,16 +255,16 @@
       <div class="form-group">
         <label class="form-label">Category</label>
         <select class="form-select" id="f-cat">
-          <option value="Dairy">Dairy</option>
-          <option value="Meat & Fish">Meat & Fish</option>
-          <option value="Produce">Produce</option>
-          <option value="Pantry">Pantry</option>
-          <option value="Frozen">Frozen</option>
-          <option value="Bakery">Bakery</option>
-          <option value="Drinks">Drinks</option>
-          <option value="Cleaning">Cleaning</option>
-          <option value="Personal Care">Personal Care</option>
-          <option value="Other">Other</option>
+          <option>Dairy</option>
+          <option>Meat &amp; Fish</option>
+          <option>Produce</option>
+          <option>Pantry</option>
+          <option>Frozen</option>
+          <option>Bakery</option>
+          <option>Drinks</option>
+          <option>Cleaning</option>
+          <option>Personal Care</option>
+          <option>Other</option>
         </select>
       </div>
       <div class="form-group">
@@ -290,7 +286,6 @@
         <input class="form-input" id="f-restock" type="number" min="0" step="0.5" placeholder="4">
       </div>
     </div>
-
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
       <button class="btn-danger" id="delete-btn" onclick="deleteItem()" style="display:none">Delete</button>
@@ -304,73 +299,62 @@
   <div class="modal">
     <div class="modal-handle"></div>
     <h2>Settings</h2>
-    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px;">Manage your Firebase connection and app data.</p>
-    <button class="btn-secondary" style="width:100%;margin-bottom:10px" onclick="showReconfig()">Reconnect Firebase</button>
-    <button class="btn-danger" style="width:100%" onclick="confirmClear()">Clear All Data</button>
-    <div style="margin-top:20px;font-size:.75rem;color:var(--text-muted);text-align:center">Home Pantry v1.0</div>
-    <div class="modal-actions" style="margin-top:12px">
-      <button class="btn-secondary" onclick="closeSettings()">Close</button>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px">Connected to Google Sheets via Apps Script.</p>
+    <div class="form-group">
+      <label class="form-label">Apps Script URL</label>
+      <input class="form-input" id="settings-url" type="url" style="font-size:.78rem;font-family:monospace">
     </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+      <button class="btn-primary" onclick="saveSettings()">Save URL</button>
+    </div>
+    <div style="margin-top:16px">
+      <button class="btn-danger" style="width:100%" onclick="confirmClear()">Clear all local data & reconnect</button>
+    </div>
+    <div style="margin-top:20px;font-size:.75rem;color:var(--text-muted);text-align:center">Home Pantry v2.0</div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
-<!-- Firebase SDK -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp }
-  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-
-// ── State ──────────────────────────────────────────────
-let db = null;
-let items = {};          // { id: { name, cat, unit, onHand, threshold, restock } }
-let shopTicked = {};     // { id: true/false } — session only, resets on reload
-let shopBuyQty = {};     // { id: number }
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let SCRIPT_URL = '';
+let items = {};         // { id: { name, cat, unit, onHand, threshold, restock } }
+let shopTicked = {};    // session-only tick state
+let shopBuyQty = {};    // session-only buy quantities
+let pollTimer = null;
 
 const CATEGORIES = ['Dairy','Meat & Fish','Produce','Pantry','Frozen','Bakery','Drinks','Cleaning','Personal Care','Other'];
 
-// ── Boot ───────────────────────────────────────────────
+// ── Boot ───────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  const saved = localStorage.getItem('firebase_config');
+  const saved = localStorage.getItem('pantry_script_url');
   if (saved) {
-    bootApp(JSON.parse(saved));
+    SCRIPT_URL = saved;
+    launchApp();
   } else {
     document.getElementById('setup-screen').classList.add('visible');
   }
 });
 
-function bootApp(config) {
-  try {
-    const app = initializeApp(config);
-    db = getFirestore(app);
-    document.getElementById('setup-screen').classList.remove('visible');
-    document.getElementById('app').style.display = 'block';
-    populateCatFilter();
-    subscribeItems();
-  } catch(e) {
-    showSetupError('Firebase error: ' + e.message);
-  }
+function launchApp() {
+  document.getElementById('setup-screen').classList.remove('visible');
+  document.getElementById('app').style.display = 'block';
+  populateCatFilter();
+  fetchItems();
+  pollTimer = setInterval(fetchItems, 10000);
 }
 
-window.saveConfig = function() {
-  const raw = document.getElementById('config-input').value.trim();
-  let config;
-  try {
-    const start = raw.indexOf('{');
-    const end = raw.lastIndexOf('}');
-    if (start === -1 || end === -1) throw new Error('No JSON object found — paste the { ... } block');
-    let jsonStr = raw.slice(start, end + 1);
-    jsonStr = jsonStr.replace(/\/\/[^\n]*/g, '');           // strip JS comments
-    jsonStr = jsonStr.replace(/^(\s*)(\w+)(\s*):/gm, '$1"$2"$3:'); // quote unquoted keys (line-start only)
-    jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');        // remove trailing commas
-    config = JSON.parse(jsonStr);
-    if (!config.apiKey || !config.projectId) throw new Error('Missing apiKey or projectId');
-  } catch(e) {
-    showSetupError('Invalid config: ' + e.message); return;
+// ── Setup ──────────────────────────────────────────────────────────────────
+window.saveUrl = function() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    showSetupError('That doesn\'t look like an Apps Script URL — it should start with https://script.google.com'); return;
   }
-  localStorage.setItem('firebase_config', JSON.stringify(config));
-  bootApp(config);
+  localStorage.setItem('pantry_script_url', url);
+  SCRIPT_URL = url;
+  launchApp();
 };
 
 function showSetupError(msg) {
@@ -378,27 +362,39 @@ function showSetupError(msg) {
   el.textContent = msg; el.style.display = 'block';
 }
 
-// ── Firestore subscription ─────────────────────────────
-function subscribeItems() {
-  const colRef = collection(db, 'pantry_items');
-  onSnapshot(colRef,
-    snap => {
-      items = {};
-      snap.forEach(d => { items[d.id] = d.data(); });
-      renderPantry();
-      renderShop();
-      updateSyncStatus(true);
-    },
-    err => { updateSyncStatus(false); console.error(err); }
-  );
+// ── Data fetch ─────────────────────────────────────────────────────────────
+async function fetchItems() {
+  setSyncStatus('syncing');
+  try {
+    const res = await fetch(SCRIPT_URL);
+    const data = await res.json();
+    const newItems = {};
+    (data.items || []).forEach(it => { newItems[it.id] = it; });
+    items = newItems;
+    renderPantry();
+    renderShop();
+    setSyncStatus('ok');
+  } catch(e) {
+    setSyncStatus('offline');
+  }
 }
 
-function updateSyncStatus(online) {
-  document.getElementById('sync-dot').className = 'sync-dot' + (online ? '' : ' offline');
-  document.getElementById('sync-label').textContent = online ? 'Live sync' : 'Offline';
+async function apiPost(body) {
+  const res = await fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(body)
+  });
+  return res.json();
 }
 
-// ── Tabs ───────────────────────────────────────────────
+function setSyncStatus(state) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot' + (state === 'offline' ? ' offline' : state === 'syncing' ? ' syncing' : '');
+  lbl.textContent = state === 'ok' ? 'Synced' : state === 'syncing' ? 'Syncing…' : 'Offline';
+}
+
+// ── Tabs ───────────────────────────────────────────────────────────────────
 window.switchTab = function(tab) {
   ['pantry','shop'].forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === tab);
@@ -407,7 +403,7 @@ window.switchTab = function(tab) {
   document.getElementById('fab').style.display = tab === 'pantry' ? 'flex' : 'none';
 };
 
-// ── Category filter ────────────────────────────────────
+// ── Category filter ────────────────────────────────────────────────────────
 function populateCatFilter() {
   const sel = document.getElementById('cat-filter');
   CATEGORIES.forEach(c => {
@@ -415,11 +411,11 @@ function populateCatFilter() {
   });
 }
 
-// ── Pantry render ──────────────────────────────────────
+// ── Pantry render ──────────────────────────────────────────────────────────
 window.renderPantry = function() {
   const search = document.getElementById('search-input').value.toLowerCase();
-  const catF = document.getElementById('cat-filter').value;
-  const list = document.getElementById('pantry-list');
+  const catF   = document.getElementById('cat-filter').value;
+  const list   = document.getElementById('pantry-list');
 
   const filtered = Object.entries(items).filter(([,v]) => {
     if (catF && v.cat !== catF) return false;
@@ -428,13 +424,12 @@ window.renderPantry = function() {
   });
 
   if (!filtered.length) {
-    list.innerHTML = '<div class="pantry-empty"><div style="font-size:2.5rem;margin-bottom:12px">🥫</div><div style="font-weight:600">No items yet</div><div style="font-size:.85rem;margin-top:6px">Tap + to add your first item</div></div>';
+    list.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:12px">🥫</div><div style="font-weight:600">No items yet</div><div style="font-size:.85rem;margin-top:6px">Tap + to add your first item</div></div>';
     return;
   }
 
-  // Group by category
   const byCat = {};
-  filtered.forEach(([id,v]) => { (byCat[v.cat] = byCat[v.cat]||[]).push([id,v]); });
+  filtered.forEach(([id,v]) => { (byCat[v.cat] = byCat[v.cat] || []).push([id,v]); });
 
   list.innerHTML = CATEGORIES.filter(c => byCat[c]).map(cat => `
     <div class="cat-section">
@@ -446,10 +441,12 @@ window.renderPantry = function() {
 
 function itemCard(id, v) {
   const pct = v.threshold > 0 ? v.onHand / v.threshold : 1;
-  const cls = pct <= 0 ? 'low' : pct < 1 ? 'warn' : 'ok';
-  const badge = pct <= 0 ? '<span class="status-badge badge-low">OUT</span>'
-              : pct < 1  ? '<span class="status-badge badge-warn">LOW</span>'
-              :             '<span class="status-badge badge-ok">OK</span>';
+  const cls  = pct <= 0 ? 'low' : pct < 1 ? 'warn' : 'ok';
+  const badge = pct <= 0
+    ? '<span class="status-badge badge-low">OUT</span>'
+    : pct < 1
+    ? '<span class="status-badge badge-warn">LOW</span>'
+    : '<span class="status-badge badge-ok">OK</span>';
   return `
     <div class="item-card ${cls}">
       <div class="item-info">
@@ -458,52 +455,45 @@ function itemCard(id, v) {
         ${badge}
       </div>
       <div class="item-qty">
-        <button class="qty-btn" onclick="adjustOnHand('${id}', -0.5)">−</button>
+        <button class="qty-btn" onclick="adjustOnHand('${id}',-0.5)">−</button>
         <div class="qty-display">${v.onHand}<br><span style="font-size:.65rem;color:var(--text-muted);font-weight:400">${esc(v.unit)}</span></div>
-        <button class="qty-btn" onclick="adjustOnHand('${id}', 0.5)">+</button>
+        <button class="qty-btn" onclick="adjustOnHand('${id}',0.5)">+</button>
       </div>
       <button class="edit-btn" onclick="openEditModal('${id}')">✏️</button>
     </div>`;
 }
 
-// ── Shopping render ────────────────────────────────────
+// ── Shopping render ────────────────────────────────────────────────────────
 window.renderShop = function() {
   const shopItems = Object.entries(items).filter(([,v]) => v.onHand < v.threshold);
   const list = document.getElementById('shop-list');
-
-  // Badge
   const remaining = shopItems.filter(([id]) => !shopTicked[id]).length;
+
   document.getElementById('shop-badge').textContent = remaining > 0 ? ` (${remaining})` : '';
   document.getElementById('shop-count').textContent = shopItems.length;
   document.getElementById('shop-done-count').textContent = shopItems.filter(([id]) => shopTicked[id]).length;
 
   if (!shopItems.length) {
-    list.innerHTML = `
-      <div class="shop-empty">
-        <div class="shop-empty-icon">✅</div>
-        <div class="shop-empty-text">You're all stocked up!</div>
-        <div class="shop-empty-sub">Items will appear here when stock falls below minimum</div>
-      </div>`;
+    list.innerHTML = `<div class="shop-empty"><div class="shop-empty-icon">✅</div><div class="shop-empty-text">You're all stocked up!</div><div class="shop-empty-sub">Items appear here when stock falls below minimum</div></div>`;
     return;
   }
 
-  // Sort: unticked first
-  shopItems.sort(([a],[b]) => (shopTicked[a]?1:0) - (shopTicked[b]?1:0));
+  shopItems.sort(([a],[b]) => (shopTicked[a] ? 1 : 0) - (shopTicked[b] ? 1 : 0));
 
   list.innerHTML = shopItems.map(([id,v]) => {
-    const needed = Math.max(0, v.restock - v.onHand);
+    const needed = Math.max(0, +(v.restock - v.onHand).toFixed(2));
     if (shopBuyQty[id] === undefined) shopBuyQty[id] = needed;
     const ticked = !!shopTicked[id];
     return `
-      <div class="shop-item ${ticked?'done':''}">
-        <div class="shop-checkbox ${ticked?'checked':''}" onclick="toggleTick('${id}')"></div>
+      <div class="shop-item ${ticked ? 'done' : ''}">
+        <div class="shop-checkbox ${ticked ? 'checked' : ''}" onclick="toggleTick('${id}')"></div>
         <div class="shop-item-info">
           <div class="shop-item-name">${esc(v.name)}</div>
           <div class="shop-item-sub">${v.cat} · Have: ${v.onHand} ${esc(v.unit)} · Need: ${needed} ${esc(v.unit)}</div>
-          <div class="shop-qty-row" style="margin-top:6px">
+          <div class="shop-qty-row">
             <span class="shop-qty-label">Buy:</span>
             <input class="shop-qty-input" type="number" min="0" step="0.5" value="${shopBuyQty[id]}"
-              onchange="shopBuyQty['${id}'] = parseFloat(this.value)||0" id="sqty-${id}">
+              onchange="shopBuyQty['${id}']=parseFloat(this.value)||0" id="sqty-${id}">
             <span class="shop-qty-label">${esc(v.unit)}</span>
             ${!ticked ? `<button class="confirm-btn" onclick="confirmPurchase('${id}')">Add to pantry</button>` : ''}
           </div>
@@ -518,40 +508,38 @@ window.toggleTick = function(id) {
 };
 
 window.confirmPurchase = async function(id) {
-  const v = items[id];
-  if (!v) return;
+  const v = items[id]; if (!v) return;
   const qty = parseFloat(document.getElementById('sqty-' + id)?.value) || 0;
-  const newOnHand = +(v.onHand + qty).toFixed(2);
-  await setDoc(doc(db, 'pantry_items', id), { ...v, onHand: newOnHand, updatedAt: serverTimestamp() });
+  const updated = { ...v, onHand: +(v.onHand + qty).toFixed(2) };
+  items[id] = updated;
+  renderPantry(); renderShop();
   shopTicked[id] = true;
+  await apiPost({ action: 'save', item: { id, ...updated } });
   toast(`Added ${qty} ${v.unit} of ${v.name} to pantry`);
+  renderShop();
 };
 
-// ── Adjust on-hand from pantry ─────────────────────────
+// ── Adjust on-hand ─────────────────────────────────────────────────────────
 window.adjustOnHand = async function(id, delta) {
-  const v = items[id];
-  if (!v) return;
+  const v = items[id]; if (!v) return;
   const newVal = Math.max(0, +(v.onHand + delta).toFixed(2));
-  await setDoc(doc(db, 'pantry_items', id), { ...v, onHand: newVal, updatedAt: serverTimestamp() });
+  items[id] = { ...v, onHand: newVal };
+  renderPantry(); renderShop();
+  await apiPost({ action: 'save', item: { id, ...items[id] } });
 };
 
-// ── Modal: Add ─────────────────────────────────────────
+// ── Item modal ─────────────────────────────────────────────────────────────
 window.openAddModal = function() {
   document.getElementById('modal-title').textContent = 'Add Item';
   document.getElementById('modal-id').value = '';
-  document.getElementById('f-name').value = '';
+  ['f-name','f-unit','f-onhand','f-threshold','f-restock'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-cat').value = 'Pantry';
-  document.getElementById('f-unit').value = '';
-  document.getElementById('f-onhand').value = '';
-  document.getElementById('f-threshold').value = '';
-  document.getElementById('f-restock').value = '';
   document.getElementById('delete-btn').style.display = 'none';
   document.getElementById('item-modal').classList.add('open');
 };
 
 window.openEditModal = function(id) {
-  const v = items[id];
-  if (!v) return;
+  const v = items[id]; if (!v) return;
   document.getElementById('modal-title').textContent = 'Edit Item';
   document.getElementById('modal-id').value = id;
   document.getElementById('f-name').value = v.name;
@@ -572,50 +560,56 @@ window.saveItem = async function() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { alert('Item name required'); return; }
   const id = document.getElementById('modal-id').value || crypto.randomUUID();
-  const data = {
+  const item = {
+    id,
     name,
-    cat: document.getElementById('f-cat').value,
-    unit: document.getElementById('f-unit').value.trim() || 'each',
-    onHand: parseFloat(document.getElementById('f-onhand').value) || 0,
+    cat:       document.getElementById('f-cat').value,
+    unit:      document.getElementById('f-unit').value.trim() || 'each',
+    onHand:    parseFloat(document.getElementById('f-onhand').value) || 0,
     threshold: parseFloat(document.getElementById('f-threshold').value) || 0,
-    restock: parseFloat(document.getElementById('f-restock').value) || 0,
-    updatedAt: serverTimestamp(),
+    restock:   parseFloat(document.getElementById('f-restock').value) || 0,
   };
-  await setDoc(doc(db, 'pantry_items', id), data);
+  items[id] = item;
+  renderPantry(); renderShop();
   closeModal();
+  await apiPost({ action: 'save', item });
   toast('Saved ' + name);
 };
 
 window.deleteItem = async function() {
-  const id = document.getElementById('modal-id').value;
-  if (!id) return;
+  const id = document.getElementById('modal-id').value; if (!id) return;
   if (!confirm('Delete "' + items[id]?.name + '"?')) return;
-  await deleteDoc(doc(db, 'pantry_items', id));
+  delete items[id];
+  renderPantry(); renderShop();
   closeModal();
+  await apiPost({ action: 'delete', id });
   toast('Deleted');
 };
 
-// ── Settings ───────────────────────────────────────────
+// ── Settings ───────────────────────────────────────────────────────────────
 window.showSettings = function() {
+  document.getElementById('settings-url').value = SCRIPT_URL;
   document.getElementById('settings-modal').classList.add('open');
 };
 window.closeSettings = function() {
   document.getElementById('settings-modal').classList.remove('open');
 };
-window.showReconfig = function() {
-  localStorage.removeItem('firebase_config');
+window.saveSettings = function() {
+  const url = document.getElementById('settings-url').value.trim();
+  if (url) { localStorage.setItem('pantry_script_url', url); SCRIPT_URL = url; }
+  closeSettings();
+  fetchItems();
+};
+window.confirmClear = function() {
+  if (!confirm('This will clear the saved URL and reload. Continue?')) return;
+  localStorage.removeItem('pantry_script_url');
   location.reload();
 };
-window.confirmClear = async function() {
-  if (!confirm('Delete ALL pantry items? This cannot be undone.')) return;
-  closeSettings();
-  const promises = Object.keys(items).map(id => deleteDoc(doc(db, 'pantry_items', id)));
-  await Promise.all(promises);
-  toast('All items cleared');
-};
 
-// ── Helpers ────────────────────────────────────────────
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// ── Helpers ────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 window.toast = function(msg) {
   const t = document.getElementById('toast');
@@ -623,10 +617,9 @@ window.toast = function(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 };
 
-// Close modals on overlay click
-document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => {
-  if (e.target === o) { o.classList.remove('open'); }
-}));
+document.querySelectorAll('.modal-overlay').forEach(o =>
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); })
+);
 </script>
 </body>
 </html>
