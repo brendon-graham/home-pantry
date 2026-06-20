@@ -531,7 +531,7 @@ function mergeFoundItems(newItems) {
     const key = it.name.toLowerCase().trim();
     if (inScan.has(key)) return;
     inScan.add(key);
-    foundItems.push({ name:it.name, cat:it.cat||'Other', unit:it.unit||'each', checked:!inPantry.has(key), existing:inPantry.has(key) });
+    foundItems.push({ name:it.name, brand:it.brand||'', cat:it.cat||'Other', unit:it.unit||'each', checked:!inPantry.has(key), existing:inPantry.has(key) });
     added = true;
   });
   if (added) renderLiveList();
@@ -575,6 +575,7 @@ function scanRowHtml(it, idx, phase) {
   return `<div class="scan-row">
     <div class="${checkCls}" onclick="${fn}(${idx})"></div>
     <div class="scan-row-info">
+      ${it.brand ? `<div style="font-size:.72rem;color:var(--text-muted);margin-bottom:1px">${esc(it.brand)}</div>` : ''}
       <div class="scan-row-name">${esc(it.name)}</div>
       <div class="scan-row-sub">${esc(it.cat)} · ${esc(it.unit)}${isExisting?` <span class="scan-existing-tag">· Already in pantry</span>`:''}</div>
     </div>
