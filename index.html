@@ -357,9 +357,10 @@ window.saveConfig = function() {
   const raw = document.getElementById('config-input').value.trim();
   let config;
   try {
-    // Accept bare object or with variable prefix
-    const jsonStr = raw.replace(/^.*?=\s*/, '').replace(/;?\s*$/, '');
-    config = JSON.parse(jsonStr);
+    const start = raw.indexOf('{');
+    const end = raw.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('No JSON object found — paste the { ... } block');
+    config = JSON.parse(raw.slice(start, end + 1));
     if (!config.apiKey || !config.projectId) throw new Error('Missing apiKey or projectId');
   } catch(e) {
     showSetupError('Invalid config: ' + e.message); return;
