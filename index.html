@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#2d7d46">
-<title>Home Pantry v3.2</title>
+<title>Home Pantry v3.3</title>
 <style>
   :root {
     --green:#2d7d46; --green-light:#e8f5ec; --green-mid:#4caf74;
@@ -422,7 +422,7 @@
     </div>
     <button class="btn-danger-full" onclick="clearAllItems()">Clear All Pantry Items</button>
     <button class="btn-danger-full" style="margin-top:8px" onclick="confirmReset()">Reset &amp; Reconnect</button>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v3.2</div>
+    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v3.3</div>
   </div>
 </div>
 
@@ -713,20 +713,25 @@ window.startScan = async function() {
   document.getElementById('scan-status-text').textContent = 'Starting camera…';
 
   try {
-    scanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode:'environment', width:{ ideal:1280 }, height:{ ideal:720 } }
-    });
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+  } catch(err) {
+    document.getElementById('scan-status-text').textContent = 'Camera access denied';
+    setScanPulse(false);
+    setTimeout(function() { alert('Camera access is required. Please allow it in your browser/phone settings, then try again.'); }, 100);
+    return;
+  }
+  try {
     const video = document.getElementById('scan-video');
     video.srcObject = scanStream;
-    await video.play();
+    video.setAttribute('playsinline', 'true');
+    try { await video.play(); } catch(e) { /* autoplay policy — stream still renders */ }
     scanActive = true;
     setScanPulse(true);
     document.getElementById('scan-status-text').textContent = 'Scanning — sweep slowly across shelves';
     scheduleScanFrame();
   } catch(err) {
-    document.getElementById('scan-status-text').textContent = 'Camera access denied';
+    document.getElementById('scan-status-text').textContent = 'Camera error — please try again';
     setScanPulse(false);
-    setTimeout(function() { alert('Camera access is required. Please allow it in your browser settings.'); }, 100);
   }
 };
 
@@ -936,15 +941,19 @@ window.clearAllItems = async function() {
 };
 
 // ── VOICE STOCKTAKE ────────────────────────────────────────────────────────
-let voiceRecognition = null;
-let voiceFinalText   = '';
-let voiceActive      = false;
-let voiceUpdates     = [];
+let voiceRecognition  = null;
+let voiceFinalText    = '';
+let voiceActive       = false;
+let voiceUpdates      = [];
+let voiceRestartCount = 0;
+let voiceRestartTimer = null;
 
 window.startVoice = function() {
-  voiceFinalText = '';
-  voiceUpdates   = [];
-  voiceActive    = false;
+  voiceFinalText    = '';
+  voiceUpdates      = [];
+  voiceActive       = false;
+  voiceRestartCount = 0;
+  clearTimeout(voiceRestartTimer);
   document.getElementById('voice-final-text').textContent   = '';
   document.getElementById('voice-interim-text').textContent = '';
   document.getElementById('voice-status').textContent       = 'Tap the mic to start';
@@ -984,6 +993,7 @@ function startRecognition() {
   };
 
   voiceRecognition.onresult = function(e) {
+    voiceRestartCount = 0; // got speech — reset the stuck counter
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) voiceFinalText += e.results[i][0].transcript + ' ';
@@ -1004,15 +1014,27 @@ function startRecognition() {
   };
 
   voiceRecognition.onend = function() {
-    // iOS kills continuous sessions on silence — restart automatically
-    if (voiceActive) setTimeout(function() { if (voiceActive) startRecognition(); }, 150);
+    // iOS ends continuous sessions on silence — restart with a longer delay to let the mic hardware release
+    if (!voiceActive) return;
+    voiceRestartCount++;
+    if (voiceRestartCount > 15) {
+      // Stuck in a restart loop — give up gracefully
+      voiceActive = false;
+      document.getElementById('voice-mic-btn').className  = 'voice-mic-btn idle';
+      document.getElementById('voice-status').textContent = 'Mic timed out — tap to restart';
+      return;
+    }
+    clearTimeout(voiceRestartTimer);
+    voiceRestartTimer = setTimeout(function() { if (voiceActive) startRecognition(); }, 500);
   };
 
   voiceRecognition.start();
 }
 
 function stopRecognition() {
-  voiceActive = false;
+  voiceActive       = false;
+  voiceRestartCount = 0;
+  clearTimeout(voiceRestartTimer);
   if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e){} voiceRecognition = null; }
   document.getElementById('voice-mic-btn').className  = 'voice-mic-btn idle';
   document.getElementById('voice-status').textContent = voiceFinalText.trim() ? 'Done — tap Review Changes' : 'Tap mic to start';
