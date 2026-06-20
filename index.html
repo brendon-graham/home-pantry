@@ -362,7 +362,7 @@ window.saveConfig = function() {
     if (start === -1 || end === -1) throw new Error('No JSON object found — paste the { ... } block');
     let jsonStr = raw.slice(start, end + 1);
     jsonStr = jsonStr.replace(/\/\/[^\n]*/g, '');           // strip JS comments
-    jsonStr = jsonStr.replace(/(\s*)(\w+)(\s*:)/g, '$1"$2"$3'); // quote unquoted keys
+    jsonStr = jsonStr.replace(/^(\s*)(\w+)(\s*):/gm, '$1"$2"$3:'); // quote unquoted keys (line-start only)
     jsonStr = jsonStr.replace(/,(\s*[}\]])/g, '$1');        // remove trailing commas
     config = JSON.parse(jsonStr);
     if (!config.apiKey || !config.projectId) throw new Error('Missing apiKey or projectId');
