@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#2d7d46">
-<title>Home Pantry v3.0</title>
+<title>Home Pantry v3.1</title>
 <style>
   :root {
     --green:#2d7d46; --green-light:#e8f5ec; --green-mid:#4caf74;
@@ -201,6 +201,20 @@
   @keyframes spin{to{transform:rotate(360deg)}}
   .loading-text{color:white;font-size:.9rem;font-weight:600}
 
+  /* Errands */
+  .errand-add-bar{display:flex;gap:8px;margin-bottom:14px}
+  .errand-input{flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.95rem;background:white}
+  .errand-input:focus{outline:none;border-color:var(--green)}
+  .errand-add-btn{padding:10px 18px;background:var(--green);color:white;border:none;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer}
+  .errand-item{display:flex;align-items:center;gap:12px;padding:13px 14px;background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:8px;transition:opacity .2s}
+  .errand-item.done{opacity:.4}
+  .errand-text{flex:1;font-size:.95rem;font-weight:600;cursor:pointer;word-break:break-word}
+  .errand-text.struck{text-decoration:line-through}
+  .errand-del{background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:2px 4px;line-height:1;opacity:.45;flex-shrink:0}
+  .errand-del:active{opacity:1;color:var(--red)}
+  .errand-clear-bar{text-align:right;margin-bottom:10px}
+  .errand-clear-btn{background:none;border:1.5px solid var(--border);color:var(--text-muted);border-radius:8px;padding:6px 12px;font-size:.8rem;font-weight:600;cursor:pointer}
+
   /* Sync & toast */
   .sync-label{font-size:.74rem;opacity:.85;display:flex;align-items:center;gap:5px;margin-top:2px}
   .sync-dot{width:7px;height:7px;border-radius:50%;background:#86efac;flex-shrink:0}
@@ -230,6 +244,7 @@
   <div class="tabs">
     <div class="tab active" id="tab-pantry" onclick="switchTab('pantry')">Pantry</div>
     <div class="tab" id="tab-shop" onclick="switchTab('shop')">Shopping<span id="shop-badge"></span></div>
+    <div class="tab" id="tab-errands" onclick="switchTab('errands')">Errands<span id="errands-badge"></span></div>
   </div>
 </div>
 
@@ -247,6 +262,22 @@
     <div style="text-align:right"><div class="shop-summary-label">Purchased</div><div class="shop-summary-count" id="shop-done-count">0</div></div>
   </div>
   <div id="shop-list"></div>
+</div>
+
+<div class="view" id="view-errands">
+  <div class="errand-add-bar">
+    <input class="errand-input" id="errand-input" type="text" placeholder="Add item… e.g. Chicken food" onkeydown="errandKeydown(event)">
+    <button class="errand-add-btn" onclick="addErrand()">Add</button>
+  </div>
+  <div id="errand-clear-bar" class="errand-clear-bar" style="display:none">
+    <button class="errand-clear-btn" onclick="clearDoneErrands()">Clear done</button>
+  </div>
+  <div id="errand-list"></div>
+  <div id="errand-empty" class="shop-empty" style="display:none">
+    <div class="shop-empty-icon">📝</div>
+    <div class="shop-empty-text">Nothing on the list</div>
+    <div class="shop-empty-sub">Add items to pick up while in town</div>
+  </div>
 </div>
 
 <button class="fab" id="fab" onclick="openAddModal()">+</button>
@@ -389,7 +420,7 @@
     </div>
     <button class="btn-danger-full" onclick="clearAllItems()">Clear All Pantry Items</button>
     <button class="btn-danger-full" style="margin-top:8px" onclick="confirmReset()">Reset &amp; Reconnect</button>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v3.0</div>
+    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v3.1</div>
   </div>
 </div>
 
@@ -406,7 +437,7 @@ let activeChip = '';
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', function() {
-  populateCategoryChips(); fetchItems(); setInterval(fetchItems, 10000);
+  populateCategoryChips(); fetchItems(); setInterval(fetchItems, 10000); renderErrands();
 });
 
 async function fetchItems() {
@@ -436,7 +467,7 @@ function setSyncStatus(state) {
 }
 
 window.switchTab = function(tab) {
-  ['pantry','shop'].forEach(function(t) {
+  ['pantry','shop','errands'].forEach(function(t) {
     document.getElementById('tab-'+t).classList.toggle('active', t===tab);
     document.getElementById('view-'+t).classList.toggle('active', t===tab);
   });
@@ -1067,6 +1098,64 @@ window.confirmVoiceUpdates = async function() {
   }
   renderPantry(); renderShop();
   toast('✓ ' + toSave.length + ' item' + (toSave.length !== 1 ? 's' : '') + ' updated');
+};
+
+// ── ERRANDS ────────────────────────────────────────────────────────────────
+let errands = JSON.parse(localStorage.getItem('pantry_errands') || '[]');
+
+function saveErrands() { localStorage.setItem('pantry_errands', JSON.stringify(errands)); }
+
+window.renderErrands = function() {
+  const list     = document.getElementById('errand-list');
+  const empty    = document.getElementById('errand-empty');
+  const clearBar = document.getElementById('errand-clear-bar');
+  const badge    = document.getElementById('errands-badge');
+  const pending  = errands.filter(function(e) { return !e.done; }).length;
+  const doneAny  = errands.some(function(e) { return e.done; });
+
+  badge.textContent    = pending > 0 ? ' (' + pending + ')' : '';
+  clearBar.style.display = doneAny ? 'block' : 'none';
+
+  if (!errands.length) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = errands.map(function(e, i) {
+    return '<div class="errand-item' + (e.done ? ' done' : '') + '">'
+      + '<div class="shop-checkbox' + (e.done ? ' checked' : '') + '" onclick="toggleErrand(' + i + ')"></div>'
+      + '<div class="errand-text' + (e.done ? ' struck' : '') + '" onclick="toggleErrand(' + i + ')">' + esc(e.text) + '</div>'
+      + '<button class="errand-del" onclick="deleteErrand(' + i + ')">✕</button>'
+      + '</div>';
+  }).join('');
+};
+
+window.addErrand = function() {
+  const input = document.getElementById('errand-input');
+  const text  = input.value.trim();
+  if (!text) return;
+  errands.unshift({ id: Date.now(), text: text, done: false });
+  input.value = '';
+  saveErrands(); renderErrands();
+};
+
+window.errandKeydown = function(e) { if (e.key === 'Enter') addErrand(); };
+
+window.toggleErrand = function(i) {
+  errands[i].done = !errands[i].done;
+  saveErrands(); renderErrands();
+};
+
+window.deleteErrand = function(i) {
+  errands.splice(i, 1);
+  saveErrands(); renderErrands();
+};
+
+window.clearDoneErrands = function() {
+  errands = errands.filter(function(e) { return !e.done; });
+  saveErrands(); renderErrands();
+  toast('Done items cleared');
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
