@@ -69,6 +69,65 @@ function doPost(e) {
     return json({ ok: true });
   }
 
+  // ── Voice stocktake via Claude ─────────────────────
+  if (body.action === 'parseStocktake') {
+    const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');
+    if (!apiKey) return json({ error: 'CLAUDE_API_KEY not set in Script Properties' });
+
+    const pantryList = (body.pantryItems || []).map(i => `${i.id}|${i.name} (${i.unit})`).join('\n');
+
+    const payload = {
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: `You are managing a New Zealand household pantry stocktake. Match what the user said to items in their pantry list and extract quantities.
+
+PANTRY ITEMS (format: id|name (unit)):
+${pantryList}
+
+STOCKTAKE TRANSCRIPT:
+"${body.transcript}"
+
+Rules:
+- Match each spoken item to the closest pantry item name (fuzzy match is fine)
+- Extract quantity from context:
+  - Specific number: use it ("2 litres" → 2, "three cans" → 3)
+  - "half a [bag/bottle/pack]" → 0.5
+  - "nearly empty" or "almost out" → 0.5
+  - "none", "out of", "empty" → 0
+  - "full" or "plenty" → 2
+  - "a few" → 3
+  - "heaps" or "lots" → 5
+- Only return items you can confidently match AND extract a quantity for
+- Return ONLY valid JSON array: [{"id":"...","onHand":number}]
+- No explanation, no markdown, no code fences`
+      }]
+    };
+
+    try {
+      const response = UrlFetchApp.fetch('https://api.anthropic.com/v1/messages', {
+        method: 'post',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        },
+        payload: JSON.stringify(payload),
+        muteHttpExceptions: true
+      });
+      const result = JSON.parse(response.getContentText());
+      if (result.error) return json({ error: result.error.message });
+      const text  = result.content[0].text.trim();
+      const start = text.indexOf('[');
+      const end   = text.lastIndexOf(']');
+      if (start === -1) return json({ updates: [] });
+      return json({ updates: JSON.parse(text.slice(start, end + 1)) });
+    } catch(err) {
+      return json({ error: err.message });
+    }
+  }
+
   // ── Camera scan via Claude ──────────────────────────
   if (body.action === 'scanImage') {
     const apiKey = PropertiesService.getScriptProperties().getProperty('CLAUDE_API_KEY');

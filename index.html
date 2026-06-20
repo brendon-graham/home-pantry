@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#2d7d46">
-<title>Home Pantry v2.5</title>
+<title>Home Pantry v2.6</title>
 <style>
   :root {
     --green:#2d7d46; --green-light:#e8f5ec; --green-mid:#4caf74;
@@ -155,6 +155,41 @@
   .scan-row-sub{font-size:.74rem;color:var(--text-muted);margin-top:2px}
   .scan-existing-tag{color:var(--amber);font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:.3px}
 
+  /* ── VOICE OVERLAY ── */
+  #voice-overlay{display:none;position:fixed;inset:0;z-index:400;flex-direction:column}
+  #voice-overlay.open{display:flex}
+  #voice-phase-record{display:flex;flex-direction:column;flex:1;overflow:hidden;background:#111827;position:relative}
+  #voice-phase-preview{display:none;flex-direction:column;flex:1;overflow:hidden;background:#f9fafb}
+  .voice-record-header{background:var(--green);color:white;padding:16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .voice-record-header h3{font-size:1rem;font-weight:700}
+  .voice-mic-area{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:0 0 160px;gap:14px}
+  .voice-mic-btn{width:72px;height:72px;border-radius:50%;background:var(--red);border:none;color:white;font-size:2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;animation:mic-pulse 1.5s ease-in-out infinite}
+  .voice-mic-btn.idle{background:#374151;animation:none}
+  @keyframes mic-pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}70%{box-shadow:0 0 0 18px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+  .voice-status-text{color:rgba(255,255,255,.7);font-size:.85rem;font-weight:600}
+  .voice-transcript-label{font-size:.72rem;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.7px;padding:8px 16px 4px;flex-shrink:0}
+  .voice-transcript{flex:1;overflow-y:auto;margin:0 12px;background:#1f2937;border-radius:10px;padding:12px 14px;min-height:0}
+  .voice-transcript p{color:white;font-size:.95rem;line-height:1.65;word-break:break-word;margin:0}
+  .voice-interim{color:rgba(255,255,255,.4)}
+  .voice-record-footer{background:#111827;padding:12px 16px 24px;display:flex;gap:10px;flex-shrink:0}
+  .voice-preview-header{background:var(--green);color:white;padding:16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .voice-preview-header h3{font-size:1rem;font-weight:700}
+  .voice-preview-list{flex:1;overflow-y:auto;padding:12px 16px 90px}
+  .voice-preview-footer{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1.5px solid var(--border);padding:12px 16px;display:flex;gap:10px;z-index:401}
+  .preview-item{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;transition:opacity .2s}
+  .preview-item.unchecked{opacity:.4}
+  .preview-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+  .preview-check.on{background:var(--green)}
+  .preview-check.on::after{content:'✓';color:white;font-size:.8rem;font-weight:800}
+  .preview-item-info{flex:1;min-width:0}
+  .preview-item-name{font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .preview-item-change{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+  .voice-loading{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);z-index:10;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+  .voice-loading.show{display:flex}
+  .spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{color:white;font-size:.9rem;font-weight:600}
+
   /* Sync & toast */
   .sync-label{font-size:.74rem;opacity:.85;display:flex;align-items:center;gap:5px;margin-top:2px}
   .sync-dot{width:7px;height:7px;border-radius:50%;background:#86efac;flex-shrink:0}
@@ -176,6 +211,7 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="btn-icon" onclick="startVoice()" style="font-size:1rem;padding:6px 10px">🎤</button>
       <button class="btn-icon" onclick="startScan()" style="font-size:1rem;padding:6px 10px">📷 Scan</button>
       <button class="btn-icon" onclick="fetchItems()">↻</button>
       <button class="btn-icon" onclick="showSettings()">⚙️</button>
@@ -248,6 +284,48 @@
 
 </div>
 
+<!-- ══ VOICE OVERLAY ══ -->
+<div id="voice-overlay">
+
+  <!-- Phase 1: Recording -->
+  <div id="voice-phase-record">
+    <div class="voice-record-header">
+      <h3>🎤 Voice Stocktake</h3>
+      <button class="scan-close-btn" onclick="closeVoice()">✕</button>
+    </div>
+    <div class="voice-mic-area">
+      <button class="voice-mic-btn idle" id="voice-mic-btn" onclick="toggleMic()">🎤</button>
+      <span class="voice-status-text" id="voice-status">Tap mic to start</span>
+    </div>
+    <div class="voice-transcript-label">What you said</div>
+    <div class="voice-transcript" id="voice-transcript">
+      <p id="voice-final-text"></p><span id="voice-interim-text" class="voice-interim"></span>
+    </div>
+    <div class="voice-record-footer">
+      <button class="btn-secondary" style="flex:1;background:#374151;color:white;border:none" onclick="closeVoice()">Cancel</button>
+      <button class="btn-primary" style="flex:2" id="voice-review-btn" onclick="submitVoiceTranscript()" disabled>Review Changes</button>
+    </div>
+    <div class="voice-loading" id="voice-loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Matching items…</div>
+    </div>
+  </div>
+
+  <!-- Phase 2: Preview -->
+  <div id="voice-phase-preview">
+    <div class="voice-preview-header">
+      <h3 id="voice-preview-title">Review Changes</h3>
+      <button class="scan-close-btn" onclick="closeVoice()">✕</button>
+    </div>
+    <div class="voice-preview-list" id="voice-preview-list"></div>
+    <div class="voice-preview-footer">
+      <button class="btn-secondary" onclick="closeVoice()">Cancel</button>
+      <button class="btn-primary" id="voice-confirm-btn" onclick="confirmVoiceUpdates()">Save Changes</button>
+    </div>
+  </div>
+
+</div>
+
 <!-- ══ ITEM MODAL ══ -->
 <div class="modal-overlay" id="item-modal">
   <div class="modal">
@@ -301,7 +379,7 @@
     </div>
     <button class="btn-danger-full" onclick="clearAllItems()">Clear All Pantry Items</button>
     <button class="btn-danger-full" style="margin-top:8px" onclick="confirmReset()">Reset &amp; Reconnect</button>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v2.5</div>
+    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v2.6</div>
   </div>
 </div>
 
@@ -718,6 +796,174 @@ window.clearAllItems = async function() {
   const result = await apiPost({ action: 'clearAll' });
   if (result.ok) { items = {}; renderPantry(); renderShop(); toast('Pantry cleared'); }
   else toast('Error clearing pantry');
+};
+
+// ── VOICE STOCKTAKE ────────────────────────────────────────────────────────
+let voiceRecognition = null;
+let voiceFinalText   = '';
+let voiceActive      = false;
+let voiceUpdates     = [];
+
+window.startVoice = function() {
+  voiceFinalText = '';
+  voiceUpdates   = [];
+  voiceActive    = false;
+  document.getElementById('voice-final-text').textContent   = '';
+  document.getElementById('voice-interim-text').textContent = '';
+  document.getElementById('voice-status').textContent       = 'Tap the mic to start';
+  document.getElementById('voice-mic-btn').className        = 'voice-mic-btn idle';
+  document.getElementById('voice-review-btn').disabled      = true;
+  document.getElementById('voice-loading').classList.remove('show');
+  document.getElementById('voice-phase-record').style.display  = 'flex';
+  document.getElementById('voice-phase-preview').style.display = 'none';
+  document.getElementById('voice-overlay').classList.add('open');
+};
+
+window.closeVoice = function() {
+  stopRecognition();
+  document.getElementById('voice-overlay').classList.remove('open');
+  voiceFinalText = '';
+  voiceUpdates   = [];
+};
+
+window.toggleMic = function() {
+  if (voiceActive) { stopRecognition(); } else { startRecognition(); }
+};
+
+function startRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { alert('Voice recognition is not supported in this browser. Try Chrome or Safari on iOS 17+.'); return; }
+  if (voiceRecognition) { try { voiceRecognition.abort(); } catch(e){} voiceRecognition = null; }
+
+  voiceRecognition = new SR();
+  voiceRecognition.continuous     = true;
+  voiceRecognition.interimResults = true;
+  voiceRecognition.lang           = 'en-NZ';
+
+  voiceRecognition.onstart = () => {
+    voiceActive = true;
+    document.getElementById('voice-mic-btn').className    = 'voice-mic-btn';
+    document.getElementById('voice-status').textContent   = 'Listening… speak naturally';
+  };
+
+  voiceRecognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) voiceFinalText += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('voice-final-text').textContent   = voiceFinalText;
+    document.getElementById('voice-interim-text').textContent = interim;
+    document.getElementById('voice-review-btn').disabled = !(voiceFinalText.trim() || interim.trim());
+    const t = document.getElementById('voice-transcript');
+    t.scrollTop = t.scrollHeight;
+  };
+
+  voiceRecognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    document.getElementById('voice-status').textContent = 'Mic error — tap to retry';
+    voiceActive = false;
+    document.getElementById('voice-mic-btn').className = 'voice-mic-btn idle';
+  };
+
+  voiceRecognition.onend = () => {
+    // iOS kills continuous sessions on silence — restart automatically
+    if (voiceActive) setTimeout(() => { if (voiceActive) startRecognition(); }, 150);
+  };
+
+  voiceRecognition.start();
+}
+
+function stopRecognition() {
+  voiceActive = false;
+  if (voiceRecognition) { try { voiceRecognition.stop(); } catch(e){} voiceRecognition = null; }
+  document.getElementById('voice-mic-btn').className  = 'voice-mic-btn idle';
+  document.getElementById('voice-status').textContent = voiceFinalText.trim() ? 'Done — tap Review Changes' : 'Tap mic to start';
+}
+
+window.submitVoiceTranscript = async function() {
+  const interimEl = document.getElementById('voice-interim-text');
+  if (interimEl.textContent) {
+    voiceFinalText += interimEl.textContent + ' ';
+    interimEl.textContent = '';
+    document.getElementById('voice-final-text').textContent = voiceFinalText;
+  }
+  stopRecognition();
+  const transcript = voiceFinalText.trim();
+  if (!transcript) { toast('Nothing recorded'); return; }
+
+  document.getElementById('voice-loading').classList.add('show');
+  document.getElementById('voice-review-btn').disabled = true;
+
+  const pantryItems = Object.values(items).map(i => ({ id: i.id, name: i.name, unit: i.unit }));
+
+  try {
+    const result = await apiPost({ action: 'parseStocktake', transcript, pantryItems });
+    document.getElementById('voice-loading').classList.remove('show');
+    if (result.error) { toast('Error: ' + result.error); document.getElementById('voice-review-btn').disabled = false; return; }
+
+    const updates = result.updates || [];
+    if (!updates.length) { toast('No items recognised — try again'); document.getElementById('voice-review-btn').disabled = false; return; }
+
+    voiceUpdates = updates.map(u => {
+      const it = items[u.id];
+      return { id: u.id, name: it ? it.name : u.id, unit: it ? it.unit : '', oldOnHand: it ? it.onHand : 0, newOnHand: u.onHand, checked: true };
+    });
+
+    renderVoicePreview();
+    document.getElementById('voice-phase-record').style.display  = 'none';
+    document.getElementById('voice-phase-preview').style.display = 'flex';
+  } catch(e) {
+    document.getElementById('voice-loading').classList.remove('show');
+    toast('Error contacting server');
+    document.getElementById('voice-review-btn').disabled = false;
+  }
+};
+
+function renderVoicePreview() {
+  const list    = document.getElementById('voice-preview-list');
+  const checked = voiceUpdates.filter(u => u.checked).length;
+  document.getElementById('voice-preview-title').textContent = `${voiceUpdates.length} item${voiceUpdates.length!==1?'s':''} recognised`;
+  document.getElementById('voice-confirm-btn').textContent   = checked > 0 ? `Save ${checked} Change${checked!==1?'s':''}` : 'Save Changes';
+  list.innerHTML = voiceUpdates.map((u, i) => `
+    <div class="preview-item ${u.checked?'':'unchecked'}">
+      <div class="preview-check ${u.checked?'on':''}" onclick="toggleVoiceItem(${i})"></div>
+      <div class="preview-item-info">
+        <div class="preview-item-name">${esc(u.name)}</div>
+        <div class="preview-item-change">${u.oldOnHand} → <strong>${u.newOnHand}</strong> ${esc(u.unit)}</div>
+      </div>
+      <div style="display:flex;align-items:center">
+        <button class="shop-qty-btn" onclick="adjustVoiceQty(${i},-0.5)">−</button>
+        <div id="vqty-${i}" style="min-width:44px;text-align:center;font-size:.95rem;font-weight:700">${u.newOnHand}</div>
+        <button class="shop-qty-btn" onclick="adjustVoiceQty(${i},0.5)">+</button>
+      </div>
+    </div>`).join('');
+}
+
+window.toggleVoiceItem = function(i) {
+  voiceUpdates[i].checked = !voiceUpdates[i].checked;
+  renderVoicePreview();
+};
+
+window.adjustVoiceQty = function(i, delta) {
+  voiceUpdates[i].newOnHand = Math.max(0, +((voiceUpdates[i].newOnHand||0) + delta).toFixed(2));
+  const el = document.getElementById('vqty-' + i);
+  if (el) el.textContent = voiceUpdates[i].newOnHand;
+  const checked = voiceUpdates.filter(u => u.checked).length;
+  document.getElementById('voice-confirm-btn').textContent = checked > 0 ? `Save ${checked} Change${checked!==1?'s':''}` : 'Save Changes';
+};
+
+window.confirmVoiceUpdates = async function() {
+  const toSave = voiceUpdates.filter(u => u.checked);
+  if (!toSave.length) { toast('Nothing selected'); return; }
+  closeVoice();
+  for (const u of toSave) {
+    if (!items[u.id]) continue;
+    items[u.id] = { ...items[u.id], onHand: u.newOnHand };
+    await apiPost({ action: 'save', item: { id: u.id, ...items[u.id] } });
+  }
+  renderPantry(); renderShop();
+  toast(`✓ ${toSave.length} item${toSave.length!==1?'s':''} updated`);
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
