@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#2d7d46">
+<title>Home Pantry</title>
+<style>
+  :root {
+    --green: #2d7d46;
+    --green-light: #e8f5ec;
+    --green-mid: #4caf74;
+    --red: #c0392b;
+    --red-light: #fdecea;
+    --amber: #e67e22;
+    --amber-light: #fef3e2;
+    --grey: #6b7280;
+    --grey-light: #f3f4f6;
+    --border: #e5e7eb;
+    --text: #111827;
+    --text-muted: #6b7280;
+    --white: #ffffff;
+    --shadow: 0 1px 3px rgba(0,0,0,.1);
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; color: var(--text); min-height: 100dvh; }
+
+  /* ── Header ── */
+  .header { background: var(--green); color: white; padding: 14px 16px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .header-top h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: .3px; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-icon { background: rgba(255,255,255,.2); border: none; color: white; border-radius: 8px; padding: 7px 10px; font-size: .85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 600; }
+  .btn-icon:hover { background: rgba(255,255,255,.3); }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 4px; }
+  .tab { flex: 1; padding: 9px 0 11px; text-align: center; font-size: .88rem; font-weight: 600; color: rgba(255,255,255,.7); border-bottom: 3px solid transparent; cursor: pointer; transition: all .15s; }
+  .tab.active { color: white; border-bottom-color: white; }
+
+  /* ── View containers ── */
+  .view { display: none; padding: 16px; padding-bottom: 80px; }
+  .view.active { display: block; }
+
+  /* ── Search / filter bar ── */
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; }
+  .search-input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: .9rem; background: white; }
+  .search-input:focus { outline: none; border-color: var(--green); }
+  .cat-filter { padding: 9px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: .85rem; background: white; cursor: pointer; }
+
+  /* ── Category section ── */
+  .cat-section { margin-bottom: 20px; }
+  .cat-header { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); margin-bottom: 8px; padding: 0 2px; }
+
+  /* ── Item card (pantry) ── */
+  .item-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; border-left: 4px solid transparent; }
+  .item-card.low { border-left-color: var(--red); background: var(--red-light); }
+  .item-card.warn { border-left-color: var(--amber); background: var(--amber-light); }
+  .item-card.ok { border-left-color: var(--green-mid); }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .item-meta { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
+  .item-qty { display: flex; align-items: center; gap: 0; }
+  .qty-btn { width: 34px; height: 34px; border: 1.5px solid var(--border); background: var(--grey-light); border-radius: 8px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--text); }
+  .qty-btn:active { background: var(--border); }
+  .qty-display { min-width: 52px; text-align: center; font-size: 1rem; font-weight: 700; padding: 0 6px; }
+  .edit-btn { padding: 6px 8px; background: none; border: none; color: var(--grey); cursor: pointer; font-size: 1rem; border-radius: 6px; }
+  .edit-btn:hover { background: var(--grey-light); }
+
+  /* ── Status badge ── */
+  .status-badge { font-size: .7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
+  .badge-low { background: var(--red); color: white; }
+  .badge-warn { background: var(--amber); color: white; }
+  .badge-ok { background: var(--green-mid); color: white; }
+
+  /* ── Shopping list ── */
+  .shop-summary { background: var(--green); color: white; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .shop-summary-label { font-size: .85rem; opacity: .85; }
+  .shop-summary-count { font-size: 1.6rem; font-weight: 800; }
+  .shop-item { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 8px; padding: 13px 14px; display: flex; align-items: center; gap: 12px; transition: opacity .2s; }
+  .shop-item.done { opacity: .45; }
+  .shop-checkbox { width: 24px; height: 24px; border-radius: 6px; border: 2.5px solid var(--green); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
+  .shop-checkbox.checked { background: var(--green); border-color: var(--green); }
+  .shop-checkbox.checked::after { content: '✓'; color: white; font-size: .9rem; font-weight: 800; }
+  .shop-item-info { flex: 1; min-width: 0; }
+  .shop-item-name { font-size: .95rem; font-weight: 600; }
+  .shop-item-sub { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
+  .shop-qty-row { display: flex; align-items: center; gap: 6px; }
+  .shop-qty-label { font-size: .75rem; color: var(--text-muted); }
+  .shop-qty-input { width: 54px; padding: 5px 8px; border: 1.5px solid var(--border); border-radius: 7px; text-align: center; font-size: .95rem; font-weight: 700; }
+  .shop-qty-input:focus { outline: none; border-color: var(--green); }
+  .confirm-btn { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; }
+  .confirm-btn:active { background: #236638; }
+  .shop-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+  .shop-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+  .shop-empty-text { font-size: 1rem; font-weight: 600; }
+  .shop-empty-sub { font-size: .85rem; margin-top: 6px; }
+
+  /* ── FAB ── */
+  .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; background: var(--green); color: white; border: none; border-radius: 50%; font-size: 1.6rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .fab:active { transform: scale(.95); }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: flex-end; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: white; border-radius: 20px 20px 0 0; width: 100%; max-width: 520px; max-height: 90dvh; overflow-y: auto; padding: 20px 20px 40px; }
+  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+  .modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
+  .form-group { margin-bottom: 14px; }
+  .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 5px; }
+  .form-input, .form-select { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: .95rem; background: white; color: var(--text); }
+  .form-input:focus, .form-select:focus { outline: none; border-color: var(--green); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-primary { flex: 1; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+  .btn-secondary { padding: 13px 20px; background: var(--grey-light); color: var(--text); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+  .btn-danger { padding: 13px 20px; background: var(--red-light); color: var(--red); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+
+  /* ── Toast ── */
+  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 18px; border-radius: 24px; font-size: .88rem; font-weight: 600; z-index: 300; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+
+  /* ── Empty state ── */
+  .pantry-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
+
+  /* ── Sync indicator ── */
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #86efac; display: inline-block; margin-right: 5px; }
+  .sync-dot.offline { background: #fca5a5; }
+  .sync-label { font-size: .75rem; opacity: .85; display: flex; align-items: center; }
+
+  /* ── Setup screen ── */
+  #setup-screen { display: none; position: fixed; inset: 0; background: #f9fafb; z-index: 500; overflow-y: auto; padding: 32px 20px; }
+  #setup-screen.visible { display: block; }
+  .setup-card { max-width: 480px; margin: 0 auto; background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+  .setup-logo { font-size: 2.5rem; text-align: center; margin-bottom: 8px; }
+  .setup-card h1 { text-align: center; font-size: 1.3rem; font-weight: 800; margin-bottom: 4px; }
+  .setup-card p { text-align: center; color: var(--text-muted); font-size: .88rem; margin-bottom: 24px; }
+  .setup-step { background: var(--grey-light); border-radius: 10px; padding: 14px; margin-bottom: 12px; }
+  .setup-step h3 { font-size: .9rem; font-weight: 700; margin-bottom: 6px; }
+  .setup-step p, .setup-step li { font-size: .82rem; color: var(--text-muted); line-height: 1.5; }
+  .setup-step ol { padding-left: 18px; }
+  .setup-step code { background: #e5e7eb; padding: 1px 5px; border-radius: 4px; font-size: .8rem; }
+  .setup-config { width: 100%; font-family: monospace; font-size: .78rem; padding: 12px; border: 1.5px solid var(--border); border-radius: 9px; background: #1f2937; color: #86efac; min-height: 200px; resize: vertical; }
+  .btn-setup { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 12px; }
+  .setup-error { color: var(--red); font-size: .82rem; margin-top: 6px; display: none; }
+</style>
+</head>
+<body>
+
+<!-- ══ SETUP SCREEN ══ -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">🛒</div>
+    <h1>Home Pantry Setup</h1>
+    <p>One-time Firebase configuration to enable real-time sync between phones</p>
+
+    <div class="setup-step">
+      <h3>Step 1 — Create a Firebase project</h3>
+      <ol>
+        <li>Go to <strong>console.firebase.google.com</strong></li>
+        <li>Click <strong>Add project</strong> → name it "Home Pantry" → Create</li>
+        <li>Once created, click the <strong>Web icon (&lt;/&gt;)</strong> to add a web app</li>
+        <li>Register the app (name doesn't matter), skip Firebase Hosting</li>
+        <li>Copy the <code>firebaseConfig</code> object shown</li>
+      </ol>
+    </div>
+
+    <div class="setup-step">
+      <h3>Step 2 — Enable Firestore</h3>
+      <ol>
+        <li>In the left sidebar → <strong>Build → Firestore Database</strong></li>
+        <li>Click <strong>Create database</strong> → Start in <strong>test mode</strong> → Next → Enable</li>
+      </ol>
+    </div>
+
+    <div class="setup-step">
+      <h3>Step 3 — Paste your config below</h3>
+      <p>Paste the entire <code>firebaseConfig = { ... }</code> block or just the JSON object:</p>
+    </div>
+
+    <textarea class="setup-config" id="config-input" placeholder='{
+  "apiKey": "AIza...",
+  "authDomain": "your-app.firebaseapp.com",
+  "projectId": "your-app",
+  "storageBucket": "your-app.appspot.com",
+  "messagingSenderId": "123456789",
+  "appId": "1:123:web:abc..."
+}'></textarea>
+    <div class="setup-error" id="setup-error"></div>
+    <button class="btn-setup" onclick="saveConfig()">Connect & Launch App</button>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app" style="display:none">
+
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <h1>🛒 Home Pantry</h1>
+        <span class="sync-label"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Connecting…</span></span>
+      </div>
+      <div class="header-actions">
+        <button class="btn-icon" onclick="showSettings()">⚙️</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" id="tab-pantry" onclick="switchTab('pantry')">Pantry</div>
+      <div class="tab" id="tab-shop" onclick="switchTab('shop')">Shopping List <span id="shop-badge"></span></div>
+    </div>
+  </div>
+
+  <!-- PANTRY VIEW -->
+  <div class="view active" id="view-pantry">
+    <div class="filter-bar">
+      <input class="search-input" id="search-input" type="search" placeholder="Search items…" oninput="renderPantry()">
+      <select class="cat-filter" id="cat-filter" onchange="renderPantry()">
+        <option value="">All</option>
+      </select>
+    </div>
+    <div id="pantry-list"></div>
+  </div>
+
+  <!-- SHOPPING VIEW -->
+  <div class="view" id="view-shop">
+    <div class="shop-summary">
+      <div>
+        <div class="shop-summary-label">Items needed</div>
+        <div class="shop-summary-count" id="shop-count">0</div>
+      </div>
+      <div style="text-align:right">
+        <div class="shop-summary-label">Ticked off</div>
+        <div class="shop-summary-count" id="shop-done-count">0</div>
+      </div>
+    </div>
+    <div id="shop-list"></div>
+  </div>
+
+  <button class="fab" id="fab" onclick="openAddModal()">+</button>
+
+</div>
+
+<!-- ══ ITEM MODAL ══ -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="modal-title">Add Item</h2>
+    <input type="hidden" id="modal-id">
+
+    <div class="form-group">
+      <label class="form-label">Item Name</label>
+      <input class="form-input" id="f-name" type="text" placeholder="e.g. Milk">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="f-cat">
+          <option value="Dairy">Dairy</option>
+          <option value="Meat & Fish">Meat & Fish</option>
+          <option value="Produce">Produce</option>
+          <option value="Pantry">Pantry</option>
+          <option value="Frozen">Frozen</option>
+          <option value="Bakery">Bakery</option>
+          <option value="Drinks">Drinks</option>
+          <option value="Cleaning">Cleaning</option>
+          <option value="Personal Care">Personal Care</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Unit</label>
+        <input class="form-input" id="f-unit" type="text" placeholder="e.g. L, kg, pack">
+      </div>
+    </div>
+    <div class="form-row-3">
+      <div class="form-group">
+        <label class="form-label">On Hand</label>
+        <input class="form-input" id="f-onhand" type="number" min="0" step="0.5" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Min Stock</label>
+        <input class="form-input" id="f-threshold" type="number" min="0" step="0.5" placeholder="2">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Restock To</label>
+        <input class="form-input" id="f-restock" type="number" min="0" step="0.5" placeholder="4">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-danger" id="delete-btn" onclick="deleteItem()" style="display:none">Delete</button>
+      <button class="btn-primary" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SETTINGS MODAL ══ -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Settings</h2>
+    <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:16px;">Manage your Firebase connection and app data.</p>
+    <button class="btn-secondary" style="width:100%;margin-bottom:10px" onclick="showReconfig()">Reconnect Firebase</button>
+    <button class="btn-danger" style="width:100%" onclick="confirmClear()">Clear All Data</button>
+    <div style="margin-top:20px;font-size:.75rem;color:var(--text-muted);text-align:center">Home Pantry v1.0</div>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn-secondary" onclick="closeSettings()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── State ──────────────────────────────────────────────
+let db = null;
+let items = {};          // { id: { name, cat, unit, onHand, threshold, restock } }
+let shopTicked = {};     // { id: true/false } — session only, resets on reload
+let shopBuyQty = {};     // { id: number }
+
+const CATEGORIES = ['Dairy','Meat & Fish','Produce','Pantry','Frozen','Bakery','Drinks','Cleaning','Personal Care','Other'];
+
+// ── Boot ───────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('firebase_config');
+  if (saved) {
+    bootApp(JSON.parse(saved));
+  } else {
+    document.getElementById('setup-screen').classList.add('visible');
+  }
+});
+
+function bootApp(config) {
+  try {
+    const app = initializeApp(config);
+    db = getFirestore(app);
+    document.getElementById('setup-screen').classList.remove('visible');
+    document.getElementById('app').style.display = 'block';
+    populateCatFilter();
+    subscribeItems();
+  } catch(e) {
+    showSetupError('Firebase error: ' + e.message);
+  }
+}
+
+window.saveConfig = function() {
+  const raw = document.getElementById('config-input').value.trim();
+  let config;
+  try {
+    // Accept bare object or with variable prefix
+    const jsonStr = raw.replace(/^.*?=\s*/, '').replace(/;?\s*$/, '');
+    config = JSON.parse(jsonStr);
+    if (!config.apiKey || !config.projectId) throw new Error('Missing apiKey or projectId');
+  } catch(e) {
+    showSetupError('Invalid config: ' + e.message); return;
+  }
+  localStorage.setItem('firebase_config', JSON.stringify(config));
+  bootApp(config);
+};
+
+function showSetupError(msg) {
+  const el = document.getElementById('setup-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+// ── Firestore subscription ─────────────────────────────
+function subscribeItems() {
+  const colRef = collection(db, 'pantry_items');
+  onSnapshot(colRef,
+    snap => {
+      items = {};
+      snap.forEach(d => { items[d.id] = d.data(); });
+      renderPantry();
+      renderShop();
+      updateSyncStatus(true);
+    },
+    err => { updateSyncStatus(false); console.error(err); }
+  );
+}
+
+function updateSyncStatus(online) {
+  document.getElementById('sync-dot').className = 'sync-dot' + (online ? '' : ' offline');
+  document.getElementById('sync-label').textContent = online ? 'Live sync' : 'Offline';
+}
+
+// ── Tabs ───────────────────────────────────────────────
+window.switchTab = function(tab) {
+  ['pantry','shop'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+    document.getElementById('view-' + t).classList.toggle('active', t === tab);
+  });
+  document.getElementById('fab').style.display = tab === 'pantry' ? 'flex' : 'none';
+};
+
+// ── Category filter ────────────────────────────────────
+function populateCatFilter() {
+  const sel = document.getElementById('cat-filter');
+  CATEGORIES.forEach(c => {
+    const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o);
+  });
+}
+
+// ── Pantry render ──────────────────────────────────────
+window.renderPantry = function() {
+  const search = document.getElementById('search-input').value.toLowerCase();
+  const catF = document.getElementById('cat-filter').value;
+  const list = document.getElementById('pantry-list');
+
+  const filtered = Object.entries(items).filter(([,v]) => {
+    if (catF && v.cat !== catF) return false;
+    if (search && !v.name.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = '<div class="pantry-empty"><div style="font-size:2.5rem;margin-bottom:12px">🥫</div><div style="font-weight:600">No items yet</div><div style="font-size:.85rem;margin-top:6px">Tap + to add your first item</div></div>';
+    return;
+  }
+
+  // Group by category
+  const byCat = {};
+  filtered.forEach(([id,v]) => { (byCat[v.cat] = byCat[v.cat]||[]).push([id,v]); });
+
+  list.innerHTML = CATEGORIES.filter(c => byCat[c]).map(cat => `
+    <div class="cat-section">
+      <div class="cat-header">${cat}</div>
+      ${byCat[cat].map(([id,v]) => itemCard(id,v)).join('')}
+    </div>
+  `).join('');
+};
+
+function itemCard(id, v) {
+  const pct = v.threshold > 0 ? v.onHand / v.threshold : 1;
+  const cls = pct <= 0 ? 'low' : pct < 1 ? 'warn' : 'ok';
+  const badge = pct <= 0 ? '<span class="status-badge badge-low">OUT</span>'
+              : pct < 1  ? '<span class="status-badge badge-warn">LOW</span>'
+              :             '<span class="status-badge badge-ok">OK</span>';
+  return `
+    <div class="item-card ${cls}">
+      <div class="item-info">
+        <div class="item-name">${esc(v.name)}</div>
+        <div class="item-meta">Min: ${v.threshold} ${esc(v.unit)} · Restock to: ${v.restock} ${esc(v.unit)}</div>
+        ${badge}
+      </div>
+      <div class="item-qty">
+        <button class="qty-btn" onclick="adjustOnHand('${id}', -0.5)">−</button>
+        <div class="qty-display">${v.onHand}<br><span style="font-size:.65rem;color:var(--text-muted);font-weight:400">${esc(v.unit)}</span></div>
+        <button class="qty-btn" onclick="adjustOnHand('${id}', 0.5)">+</button>
+      </div>
+      <button class="edit-btn" onclick="openEditModal('${id}')">✏️</button>
+    </div>`;
+}
+
+// ── Shopping render ────────────────────────────────────
+window.renderShop = function() {
+  const shopItems = Object.entries(items).filter(([,v]) => v.onHand < v.threshold);
+  const list = document.getElementById('shop-list');
+
+  // Badge
+  const remaining = shopItems.filter(([id]) => !shopTicked[id]).length;
+  document.getElementById('shop-badge').textContent = remaining > 0 ? ` (${remaining})` : '';
+  document.getElementById('shop-count').textContent = shopItems.length;
+  document.getElementById('shop-done-count').textContent = shopItems.filter(([id]) => shopTicked[id]).length;
+
+  if (!shopItems.length) {
+    list.innerHTML = `
+      <div class="shop-empty">
+        <div class="shop-empty-icon">✅</div>
+        <div class="shop-empty-text">You're all stocked up!</div>
+        <div class="shop-empty-sub">Items will appear here when stock falls below minimum</div>
+      </div>`;
+    return;
+  }
+
+  // Sort: unticked first
+  shopItems.sort(([a],[b]) => (shopTicked[a]?1:0) - (shopTicked[b]?1:0));
+
+  list.innerHTML = shopItems.map(([id,v]) => {
+    const needed = Math.max(0, v.restock - v.onHand);
+    if (shopBuyQty[id] === undefined) shopBuyQty[id] = needed;
+    const ticked = !!shopTicked[id];
+    return `
+      <div class="shop-item ${ticked?'done':''}">
+        <div class="shop-checkbox ${ticked?'checked':''}" onclick="toggleTick('${id}')"></div>
+        <div class="shop-item-info">
+          <div class="shop-item-name">${esc(v.name)}</div>
+          <div class="shop-item-sub">${v.cat} · Have: ${v.onHand} ${esc(v.unit)} · Need: ${needed} ${esc(v.unit)}</div>
+          <div class="shop-qty-row" style="margin-top:6px">
+            <span class="shop-qty-label">Buy:</span>
+            <input class="shop-qty-input" type="number" min="0" step="0.5" value="${shopBuyQty[id]}"
+              onchange="shopBuyQty['${id}'] = parseFloat(this.value)||0" id="sqty-${id}">
+            <span class="shop-qty-label">${esc(v.unit)}</span>
+            ${!ticked ? `<button class="confirm-btn" onclick="confirmPurchase('${id}')">Add to pantry</button>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+};
+
+window.toggleTick = function(id) {
+  shopTicked[id] = !shopTicked[id];
+  renderShop();
+};
+
+window.confirmPurchase = async function(id) {
+  const v = items[id];
+  if (!v) return;
+  const qty = parseFloat(document.getElementById('sqty-' + id)?.value) || 0;
+  const newOnHand = +(v.onHand + qty).toFixed(2);
+  await setDoc(doc(db, 'pantry_items', id), { ...v, onHand: newOnHand, updatedAt: serverTimestamp() });
+  shopTicked[id] = true;
+  toast(`Added ${qty} ${v.unit} of ${v.name} to pantry`);
+};
+
+// ── Adjust on-hand from pantry ─────────────────────────
+window.adjustOnHand = async function(id, delta) {
+  const v = items[id];
+  if (!v) return;
+  const newVal = Math.max(0, +(v.onHand + delta).toFixed(2));
+  await setDoc(doc(db, 'pantry_items', id), { ...v, onHand: newVal, updatedAt: serverTimestamp() });
+};
+
+// ── Modal: Add ─────────────────────────────────────────
+window.openAddModal = function() {
+  document.getElementById('modal-title').textContent = 'Add Item';
+  document.getElementById('modal-id').value = '';
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-cat').value = 'Pantry';
+  document.getElementById('f-unit').value = '';
+  document.getElementById('f-onhand').value = '';
+  document.getElementById('f-threshold').value = '';
+  document.getElementById('f-restock').value = '';
+  document.getElementById('delete-btn').style.display = 'none';
+  document.getElementById('item-modal').classList.add('open');
+};
+
+window.openEditModal = function(id) {
+  const v = items[id];
+  if (!v) return;
+  document.getElementById('modal-title').textContent = 'Edit Item';
+  document.getElementById('modal-id').value = id;
+  document.getElementById('f-name').value = v.name;
+  document.getElementById('f-cat').value = v.cat;
+  document.getElementById('f-unit').value = v.unit;
+  document.getElementById('f-onhand').value = v.onHand;
+  document.getElementById('f-threshold').value = v.threshold;
+  document.getElementById('f-restock').value = v.restock;
+  document.getElementById('delete-btn').style.display = 'block';
+  document.getElementById('item-modal').classList.add('open');
+};
+
+window.closeModal = function() {
+  document.getElementById('item-modal').classList.remove('open');
+};
+
+window.saveItem = async function() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Item name required'); return; }
+  const id = document.getElementById('modal-id').value || crypto.randomUUID();
+  const data = {
+    name,
+    cat: document.getElementById('f-cat').value,
+    unit: document.getElementById('f-unit').value.trim() || 'each',
+    onHand: parseFloat(document.getElementById('f-onhand').value) || 0,
+    threshold: parseFloat(document.getElementById('f-threshold').value) || 0,
+    restock: parseFloat(document.getElementById('f-restock').value) || 0,
+    updatedAt: serverTimestamp(),
+  };
+  await setDoc(doc(db, 'pantry_items', id), data);
+  closeModal();
+  toast('Saved ' + name);
+};
+
+window.deleteItem = async function() {
+  const id = document.getElementById('modal-id').value;
+  if (!id) return;
+  if (!confirm('Delete "' + items[id]?.name + '"?')) return;
+  await deleteDoc(doc(db, 'pantry_items', id));
+  closeModal();
+  toast('Deleted');
+};
+
+// ── Settings ───────────────────────────────────────────
+window.showSettings = function() {
+  document.getElementById('settings-modal').classList.add('open');
+};
+window.closeSettings = function() {
+  document.getElementById('settings-modal').classList.remove('open');
+};
+window.showReconfig = function() {
+  localStorage.removeItem('firebase_config');
+  location.reload();
+};
+window.confirmClear = async function() {
+  if (!confirm('Delete ALL pantry items? This cannot be undone.')) return;
+  closeSettings();
+  const promises = Object.keys(items).map(id => deleteDoc(doc(db, 'pantry_items', id)));
+  await Promise.all(promises);
+  toast('All items cleared');
+};
+
+// ── Helpers ────────────────────────────────────────────
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+window.toast = function(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+};
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => {
+  if (e.target === o) { o.classList.remove('open'); }
+}));
+</script>
+</body>
+</html>
