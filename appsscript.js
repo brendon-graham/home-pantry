@@ -50,6 +50,13 @@ function doPost(e) {
     return json({ ok: true });
   }
 
+  // ── Clear all items ─────────────────────────────────
+  if (body.action === 'clearAll') {
+    const last = sheet.getLastRow();
+    if (last > 1) sheet.deleteRows(2, last - 1);
+    return json({ ok: true });
+  }
+
   // ── Delete item ─────────────────────────────────────
   if (body.action === 'delete') {
     const rows = sheet.getDataRange().getValues();
@@ -79,7 +86,7 @@ function doPost(e) {
           },
           {
             type: 'text',
-            text: 'Look at this image of a fridge, pantry, or shelf. List the grocery items you can clearly identify. For each item return: name (short common name), cat (one of: Dairy / Meat & Fish / Produce / Pantry / Frozen / Bakery / Drinks / Cleaning / Personal Care / Other), unit (e.g. L, kg, pack, each, bottle, can, loaf). Return ONLY a JSON array, no explanation, no markdown. Example: [{"name":"Milk","cat":"Dairy","unit":"L"},{"name":"Eggs","cat":"Dairy","unit":"each"}]. Only include clearly visible grocery items.'
+            text: 'Look at this image of a fridge, pantry, or shelf. List the grocery items you can clearly identify. For each item return: name (include brand and type/variety where visible — e.g. "Pams White Rice", "Anchor Blue Milk", "Wattie\'s Baked Beans", "Homebrand Pasta Spirals" — if brand is not visible use a descriptive name like "White Rice 1kg" or just "Brown Eggs"), cat (one of: Dairy / Meat & Fish / Produce / Pantry / Frozen / Bakery / Drinks / Cleaning / Personal Care / Other), unit (e.g. L, kg, pack, each, bottle, can, loaf). Return ONLY a JSON array, no explanation, no markdown. Example: [{"name":"Anchor Blue Milk","cat":"Dairy","unit":"L"},{"name":"Free Range Eggs","cat":"Dairy","unit":"each"}]. Only include clearly visible grocery items.'
           }
         ]
       }]

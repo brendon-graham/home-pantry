@@ -6,177 +6,162 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#2d7d46">
-<title>Home Pantry v2.2</title>
+<title>Home Pantry v2.3</title>
 <style>
   :root {
-    --green: #2d7d46;
-    --green-light: #e8f5ec;
-    --green-mid: #4caf74;
-    --red: #c0392b;
-    --red-light: #fdecea;
-    --amber: #e67e22;
-    --amber-light: #fef3e2;
-    --grey: #6b7280;
-    --grey-light: #f3f4f6;
-    --border: #e5e7eb;
-    --text: #111827;
-    --text-muted: #6b7280;
-    --shadow: 0 1px 3px rgba(0,0,0,.1);
-    --radius: 10px;
+    --green:#2d7d46; --green-light:#e8f5ec; --green-mid:#4caf74;
+    --red:#c0392b; --red-light:#fdecea;
+    --amber:#e67e22; --amber-light:#fef3e2;
+    --grey:#6b7280; --grey-light:#f3f4f6;
+    --border:#e5e7eb; --text:#111827; --text-muted:#6b7280;
+    --shadow:0 1px 3px rgba(0,0,0,.1); --radius:10px;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f9fafb; color: var(--text); min-height: 100dvh; }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f9fafb;color:var(--text);min-height:100dvh}
 
-  /* ── Header ── */
-  .header { background: var(--green); color: white; padding: 14px 16px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .header-top h1 { font-size: 1.2rem; font-weight: 700; }
-  .header-actions { display: flex; gap: 8px; }
-  .btn-icon { background: rgba(255,255,255,.2); border: none; color: white; border-radius: 8px; padding: 7px 10px; font-size: .85rem; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 600; }
-  .btn-icon:hover { background: rgba(255,255,255,.3); }
+  /* Header */
+  .header{background:var(--green);color:white;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+  .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .header-top h1{font-size:1.2rem;font-weight:700}
+  .header-actions{display:flex;gap:8px}
+  .btn-icon{background:rgba(255,255,255,.2);border:none;color:white;border-radius:8px;padding:7px 10px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:4px;font-weight:600}
+  .btn-icon:hover{background:rgba(255,255,255,.3)}
+  .tabs{display:flex}
+  .tab{flex:1;padding:9px 0 11px;text-align:center;font-size:.88rem;font-weight:600;color:rgba(255,255,255,.7);border-bottom:3px solid transparent;cursor:pointer;transition:all .15s}
+  .tab.active{color:white;border-bottom-color:white}
 
-  /* ── Tabs ── */
-  .tabs { display: flex; }
-  .tab { flex: 1; padding: 9px 0 11px; text-align: center; font-size: .88rem; font-weight: 600; color: rgba(255,255,255,.7); border-bottom: 3px solid transparent; cursor: pointer; transition: all .15s; }
-  .tab.active { color: white; border-bottom-color: white; }
+  /* Views */
+  .view{display:none;padding:16px;padding-bottom:80px}
+  .view.active{display:block}
+  .filter-bar{display:flex;gap:8px;margin-bottom:14px}
+  .search-input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.9rem;background:white}
+  .search-input:focus{outline:none;border-color:var(--green)}
+  .cat-filter{padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;background:white}
+  .cat-section{margin-bottom:20px}
+  .cat-header{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:8px;padding:0 2px}
 
-  /* ── Views ── */
-  .view { display: none; padding: 16px; padding-bottom: 80px; }
-  .view.active { display: block; }
+  /* Pantry card */
+  .item-card{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:8px;padding:12px 14px;display:flex;align-items:center;gap:12px;border-left:4px solid transparent}
+  .item-card.low{border-left-color:var(--red);background:var(--red-light)}
+  .item-card.warn{border-left-color:var(--amber);background:var(--amber-light)}
+  .item-card.ok{border-left-color:var(--green-mid)}
+  .item-info{flex:1;min-width:0}
+  .item-name{font-size:.95rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item-meta{font-size:.78rem;color:var(--text-muted);margin-top:2px}
+  .status-badge{font-size:.7rem;font-weight:700;padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+  .badge-low{background:var(--red);color:white}
+  .badge-warn{background:var(--amber);color:white}
+  .badge-ok{background:var(--green-mid);color:white}
+  .item-qty{display:flex;align-items:center}
+  .qty-btn{width:34px;height:34px;border:1.5px solid var(--border);background:var(--grey-light);border-radius:8px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .qty-btn:active{background:var(--border)}
+  .qty-display{min-width:52px;text-align:center;font-size:1rem;font-weight:700;padding:0 6px}
+  .edit-btn{padding:6px 8px;background:none;border:none;color:var(--grey);cursor:pointer;font-size:1rem;border-radius:6px}
+  .edit-btn:hover{background:var(--grey-light)}
 
-  /* ── Filter bar ── */
-  .filter-bar { display: flex; gap: 8px; margin-bottom: 14px; }
-  .search-input { flex: 1; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: .9rem; background: white; }
-  .search-input:focus { outline: none; border-color: var(--green); }
-  .cat-filter { padding: 9px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: .85rem; background: white; }
+  /* Shopping list */
+  .shop-summary{background:var(--green);color:white;border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+  .shop-summary-label{font-size:.85rem;opacity:.85}
+  .shop-summary-count{font-size:1.6rem;font-weight:800}
+  .shop-item{background:white;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:8px;padding:13px 14px;display:flex;align-items:flex-start;gap:12px;transition:opacity .3s}
+  .shop-item.done{opacity:.4}
+  .shop-checkbox{width:26px;height:26px;border-radius:7px;border:2.5px solid var(--green);background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;transition:all .15s}
+  .shop-checkbox.checked{background:var(--green);border-color:var(--green)}
+  .shop-checkbox.checked::after{content:'✓';color:white;font-size:.95rem;font-weight:800}
+  .shop-item-body{flex:1;min-width:0}
+  .shop-item-name{font-size:.95rem;font-weight:600;margin-bottom:3px}
+  .shop-item-sub{font-size:.78rem;color:var(--text-muted);margin-bottom:8px}
+  .qty-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .qty-row-label{font-size:.78rem;color:var(--text-muted);font-weight:600}
+  .shop-qty-stepper{display:flex;align-items:center}
+  .shop-qty-btn{width:30px;height:30px;border:1.5px solid var(--border);background:var(--grey-light);border-radius:6px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700}
+  .shop-qty-btn:active{background:var(--border)}
+  .shop-qty-val{min-width:44px;text-align:center;font-size:.95rem;font-weight:700;padding:0 4px}
+  .qty-unit{font-size:.78rem;color:var(--text-muted)}
+  .tick-hint{font-size:.72rem;color:var(--green);font-weight:600;margin-top:4px}
+  .shop-empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+  .shop-empty-icon{font-size:3rem;margin-bottom:12px}
+  .shop-empty-text{font-size:1rem;font-weight:600}
+  .shop-empty-sub{font-size:.85rem;margin-top:6px}
 
-  /* ── Category section ── */
-  .cat-section { margin-bottom: 20px; }
-  .cat-header { font-size: .78rem; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; color: var(--text-muted); margin-bottom: 8px; padding: 0 2px; }
+  /* FAB */
+  .fab{position:fixed;bottom:24px;right:20px;width:56px;height:56px;background:var(--green);color:white;border:none;border-radius:50%;font-size:1.6rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;z-index:50}
+  .fab:active{transform:scale(.95)}
 
-  /* ── Pantry item card ── */
-  .item-card { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; border-left: 4px solid transparent; }
-  .item-card.low  { border-left-color: var(--red);       background: var(--red-light); }
-  .item-card.warn { border-left-color: var(--amber);     background: var(--amber-light); }
-  .item-card.ok   { border-left-color: var(--green-mid); }
-  .item-info { flex: 1; min-width: 0; }
-  .item-name { font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .item-meta { font-size: .78rem; color: var(--text-muted); margin-top: 2px; }
-  .status-badge { font-size: .7rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; margin-top: 3px; display: inline-block; }
-  .badge-low  { background: var(--red);       color: white; }
-  .badge-warn { background: var(--amber);     color: white; }
-  .badge-ok   { background: var(--green-mid); color: white; }
-  .item-qty { display: flex; align-items: center; }
-  .qty-btn { width: 34px; height: 34px; border: 1.5px solid var(--border); background: var(--grey-light); border-radius: 8px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-  .qty-btn:active { background: var(--border); }
-  .qty-display { min-width: 52px; text-align: center; font-size: 1rem; font-weight: 700; padding: 0 6px; }
-  .edit-btn { padding: 6px 8px; background: none; border: none; color: var(--grey); cursor: pointer; font-size: 1rem; border-radius: 6px; }
-  .edit-btn:hover { background: var(--grey-light); }
+  /* Modals */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;align-items:flex-end;justify-content:center}
+  .modal-overlay.open{display:flex}
+  .modal{background:white;border-radius:20px 20px 0 0;width:100%;max-width:520px;max-height:90dvh;overflow-y:auto;padding:20px 20px 40px}
+  .modal-handle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 20px}
+  .modal h2{font-size:1.1rem;font-weight:700;margin-bottom:18px}
+  .form-group{margin-bottom:14px}
+  .form-label{font-size:.8rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:5px}
+  .form-input,.form-select{width:100%;padding:11px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:.95rem;background:white;color:var(--text)}
+  .form-input:focus,.form-select:focus{outline:none;border-color:var(--green)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .modal-actions{display:flex;gap:10px;margin-top:20px}
+  .btn-primary{flex:1;padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer}
+  .btn-secondary{padding:13px 20px;background:var(--grey-light);color:var(--text);border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer}
+  .btn-danger{padding:13px 20px;background:var(--red-light);color:var(--red);border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer}
+  .btn-danger-full{width:100%;padding:13px;background:var(--red-light);color:var(--red);border:none;border-radius:10px;font-size:1rem;font-weight:600;cursor:pointer;margin-top:10px}
 
-  /* ── Shopping list ── */
-  .shop-summary { background: var(--green); color: white; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-  .shop-summary-label { font-size: .85rem; opacity: .85; }
-  .shop-summary-count { font-size: 1.6rem; font-weight: 800; }
-  .shop-item { background: white; border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 8px; padding: 13px 14px; display: flex; align-items: flex-start; gap: 12px; transition: opacity .3s; }
-  .shop-item.done { opacity: .4; }
-  .shop-checkbox { width: 26px; height: 26px; border-radius: 7px; border: 2.5px solid var(--green); background: white; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; transition: all .15s; }
-  .shop-checkbox.checked { background: var(--green); border-color: var(--green); }
-  .shop-checkbox.checked::after { content: '✓'; color: white; font-size: .95rem; font-weight: 800; }
-  .shop-item-body { flex: 1; min-width: 0; }
-  .shop-item-name { font-size: .95rem; font-weight: 600; margin-bottom: 3px; }
-  .shop-item-sub  { font-size: .78rem; color: var(--text-muted); margin-bottom: 8px; }
-  .qty-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-  .qty-row-label { font-size: .78rem; color: var(--text-muted); font-weight: 600; }
-  .shop-qty-stepper { display: flex; align-items: center; }
-  .shop-qty-btn { width: 30px; height: 30px; border: 1.5px solid var(--border); background: var(--grey-light); border-radius: 6px; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 700; }
-  .shop-qty-btn:active { background: var(--border); }
-  .shop-qty-val { min-width: 44px; text-align: center; font-size: .95rem; font-weight: 700; padding: 0 4px; }
-  .qty-unit { font-size: .78rem; color: var(--text-muted); }
-  .tick-hint { font-size: .72rem; color: var(--green); font-weight: 600; margin-top: 4px; }
-  .shop-empty { text-align: center; padding: 48px 20px; color: var(--text-muted); }
-  .shop-empty-icon { font-size: 3rem; margin-bottom: 12px; }
-  .shop-empty-text { font-size: 1rem; font-weight: 600; }
-  .shop-empty-sub  { font-size: .85rem; margin-top: 6px; }
+  /* ── SCAN OVERLAY ── */
+  #scan-overlay{display:none;position:fixed;inset:0;z-index:400;background:#000;flex-direction:column}
+  #scan-overlay.open{display:flex}
 
-  /* ── FAB ── */
-  .fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; background: var(--green); color: white; border: none; border-radius: 50%; font-size: 1.6rem; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25); display: flex; align-items: center; justify-content: center; z-index: 50; }
-  .fab:active { transform: scale(.95); }
+  /* Scanning phase */
+  #scan-phase-live{display:flex;flex-direction:column;flex:1;overflow:hidden}
+  .scan-video-wrap{position:relative;flex:0 0 52%;overflow:hidden;background:#000}
+  #scan-video{width:100%;height:100%;object-fit:cover;display:block}
+  .scan-flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none;transition:opacity .08s}
+  .scan-flash.pop{opacity:.5}
+  .scan-guide{position:absolute;inset:12%;pointer-events:none}
+  .scan-guide::before,.scan-guide::after,.scan-guide span::before,.scan-guide span::after{content:'';position:absolute;width:22px;height:22px;border-color:rgba(255,255,255,.75);border-style:solid}
+  .scan-guide::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:3px 0 0 0}
+  .scan-guide::after{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 3px 0 0}
+  .scan-guide span::before{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 3px}
+  .scan-guide span::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 3px 0}
+  .scan-top-bar{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(to bottom,rgba(0,0,0,.55),transparent)}
+  .scan-top-bar h3{color:white;font-size:.95rem;font-weight:700}
+  .scan-close-btn{background:rgba(255,255,255,.2);border:none;color:white;border-radius:50%;width:32px;height:32px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .scan-status-bar{background:#111827;color:white;padding:10px 16px;display:flex;align-items:center;gap:10px;font-size:.83rem;flex-shrink:0}
+  .scan-pulse-dot{width:9px;height:9px;border-radius:50%;background:#ef4444;flex-shrink:0;animation:blink 1.1s ease-in-out infinite}
+  .scan-pulse-dot.idle{background:var(--grey);animation:none}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+  .scan-count-badge{margin-left:auto;background:var(--green);color:white;border-radius:12px;padding:3px 10px;font-size:.78rem;font-weight:700}
+  .scan-live-list{flex:1;overflow-y:auto;background:#f9fafb;padding:10px 16px 80px}
+  .scan-live-footer{position:absolute;bottom:0;left:0;right:0;background:white;border-top:1.5px solid var(--border);padding:12px 16px;display:flex;gap:10px}
 
-  /* ── Modals ── */
-  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 200; align-items: flex-end; justify-content: center; }
-  .modal-overlay.open { display: flex; }
-  .modal { background: white; border-radius: 20px 20px 0 0; width: 100%; max-width: 520px; max-height: 90dvh; overflow-y: auto; padding: 20px 20px 40px; }
-  .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
-  .modal h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 18px; }
-  .form-group { margin-bottom: 14px; }
-  .form-label { font-size: .8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .5px; display: block; margin-bottom: 5px; }
-  .form-input, .form-select { width: 100%; padding: 11px 12px; border: 1.5px solid var(--border); border-radius: 9px; font-size: .95rem; background: white; color: var(--text); }
-  .form-input:focus, .form-select:focus { outline: none; border-color: var(--green); }
-  .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-  .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-  .btn-primary   { flex: 1; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-  .btn-secondary { padding: 13px 20px; background: var(--grey-light); color: var(--text); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
-  .btn-danger    { padding: 13px 20px; background: var(--red-light); color: var(--red); border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+  /* Review phase */
+  #scan-phase-review{display:none;flex-direction:column;flex:1;overflow:hidden;background:#f9fafb}
+  .review-header{background:var(--green);color:white;padding:16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .review-header h3{font-size:1rem;font-weight:700}
+  .review-list{flex:1;overflow-y:auto;padding:12px 16px 90px}
+  .review-footer{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1.5px solid var(--border);padding:12px 16px;display:flex;gap:10px;z-index:401}
 
-  /* ── VIDEO SCAN OVERLAY ── */
-  #scan-overlay { display: none; position: fixed; inset: 0; z-index: 400; background: #000; flex-direction: column; }
-  #scan-overlay.open { display: flex; }
+  /* Shared scan list styles */
+  .scan-list-header{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-muted);padding:8px 0 6px}
+  .scan-empty-hint{color:var(--text-muted);font-size:.85rem;text-align:center;padding:24px 0}
+  .scan-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);animation:fadeIn .2s ease}
+  .scan-row:last-child{border-bottom:none}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .scan-row-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--green);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+  .scan-row-check.checked{background:var(--green)}
+  .scan-row-check.checked::after{content:'✓';color:white;font-size:.8rem;font-weight:800}
+  .scan-row-check.disabled{border-color:var(--border);cursor:default}
+  .scan-row-info{flex:1}
+  .scan-row-name{font-size:.9rem;font-weight:600}
+  .scan-row-sub{font-size:.74rem;color:var(--text-muted);margin-top:2px}
+  .scan-existing-tag{color:var(--amber);font-weight:700;text-transform:uppercase;font-size:.68rem;letter-spacing:.3px}
 
-  .scan-video-wrap { position: relative; flex: 0 0 52%; overflow: hidden; background: #000; }
-  #scan-video { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .scan-flash { position: absolute; inset: 0; background: white; opacity: 0; pointer-events: none; transition: opacity .08s; }
-  .scan-flash.pop { opacity: .55; }
-
-  /* corner guides */
-  .scan-guide { position: absolute; inset: 12%; pointer-events: none; }
-  .scan-guide::before, .scan-guide::after,
-  .scan-guide span::before, .scan-guide span::after {
-    content: ''; position: absolute; width: 20px; height: 20px; border-color: rgba(255,255,255,.8); border-style: solid;
-  }
-  .scan-guide::before  { top: 0;    left: 0;   border-width: 3px 0 0 3px; border-radius: 3px 0 0 0; }
-  .scan-guide::after   { top: 0;    right: 0;  border-width: 3px 3px 0 0; border-radius: 0 3px 0 0; }
-  .scan-guide span::before { bottom: 0; left: 0;   border-width: 0 0 3px 3px; border-radius: 0 0 0 3px; }
-  .scan-guide span::after  { bottom: 0; right: 0;  border-width: 0 3px 3px 0; border-radius: 0 0 3px 0; }
-
-  .scan-top-bar { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; background: linear-gradient(to bottom, rgba(0,0,0,.6), transparent); }
-  .scan-top-bar h3 { color: white; font-size: .95rem; font-weight: 700; }
-  .scan-close-btn { background: rgba(255,255,255,.2); border: none; color: white; border-radius: 50%; width: 32px; height: 32px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-  .scan-status-bar { background: #111827; color: white; padding: 10px 16px; display: flex; align-items: center; gap: 10px; font-size: .83rem; flex-shrink: 0; }
-  .scan-pulse-dot { width: 9px; height: 9px; border-radius: 50%; background: #ef4444; flex-shrink: 0; animation: blink 1.1s ease-in-out infinite; }
-  .scan-pulse-dot.idle { background: #6b7280; animation: none; }
-  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
-  .scan-count-badge { margin-left: auto; background: var(--green); color: white; border-radius: 12px; padding: 3px 10px; font-size: .78rem; font-weight: 700; }
-
-  .scan-list-wrap { flex: 1; overflow-y: auto; background: #f9fafb; padding: 10px 16px 90px; }
-  .scan-list-header { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .7px; color: var(--text-muted); padding: 8px 0 6px; }
-  .scan-empty-hint { color: var(--text-muted); font-size: .85rem; text-align: center; padding: 24px 0; }
-
-  .scan-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); animation: fadeIn .25s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .scan-row:last-child { border-bottom: none; }
-  .scan-row-check { width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--green); cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; }
-  .scan-row-check.checked { background: var(--green); }
-  .scan-row-check.checked::after { content: '✓'; color: white; font-size: .8rem; font-weight: 800; }
-  .scan-row-check.existing { border-color: var(--grey); }
-  .scan-row-info { flex: 1; }
-  .scan-row-name { font-size: .9rem; font-weight: 600; }
-  .scan-row-sub  { font-size: .74rem; color: var(--text-muted); margin-top: 2px; }
-  .scan-existing-tag { font-size: .68rem; color: var(--amber); font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
-
-  .scan-bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1.5px solid var(--border); padding: 12px 16px; display: none; gap: 10px; z-index: 401; }
-  .scan-bottom-bar.visible { display: flex; }
-
-  /* ── Sync dot ── */
-  .sync-label { font-size: .74rem; opacity: .85; display: flex; align-items: center; gap: 5px; margin-top: 2px; }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #86efac; flex-shrink: 0; }
-  .sync-dot.syncing { background: #fcd34d; }
-  .sync-dot.offline { background: #fca5a5; }
-
-  /* ── Toast ── */
-  .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 10px 18px; border-radius: 24px; font-size: .88rem; font-weight: 600; z-index: 500; opacity: 0; transition: opacity .3s; pointer-events: none; white-space: nowrap; }
-  .toast.show { opacity: 1; }
+  /* Sync & toast */
+  .sync-label{font-size:.74rem;opacity:.85;display:flex;align-items:center;gap:5px;margin-top:2px}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:#86efac;flex-shrink:0}
+  .sync-dot.syncing{background:#fcd34d}
+  .sync-dot.offline{background:#fca5a5}
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1f2937;color:white;padding:10px 18px;border-radius:24px;font-size:.88rem;font-weight:600;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+  .toast.show{opacity:1}
 </style>
 </head>
 <body>
@@ -202,60 +187,65 @@
   </div>
 </div>
 
-<!-- PANTRY VIEW -->
 <div class="view active" id="view-pantry">
   <div class="filter-bar">
     <input class="search-input" id="search-input" type="search" placeholder="Search items…" oninput="renderPantry()">
-    <select class="cat-filter" id="cat-filter" onchange="renderPantry()">
-      <option value="">All</option>
-    </select>
+    <select class="cat-filter" id="cat-filter" onchange="renderPantry()"><option value="">All</option></select>
   </div>
   <div id="pantry-list"></div>
 </div>
 
-<!-- SHOPPING VIEW -->
 <div class="view" id="view-shop">
   <div class="shop-summary">
-    <div>
-      <div class="shop-summary-label">Items needed</div>
-      <div class="shop-summary-count" id="shop-count">0</div>
-    </div>
-    <div style="text-align:right">
-      <div class="shop-summary-label">Purchased</div>
-      <div class="shop-summary-count" id="shop-done-count">0</div>
-    </div>
+    <div><div class="shop-summary-label">Items needed</div><div class="shop-summary-count" id="shop-count">0</div></div>
+    <div style="text-align:right"><div class="shop-summary-label">Purchased</div><div class="shop-summary-count" id="shop-done-count">0</div></div>
   </div>
   <div id="shop-list"></div>
 </div>
 
 <button class="fab" id="fab" onclick="openAddModal()">+</button>
 
-<!-- ══ VIDEO SCAN OVERLAY ══ -->
+<!-- ══ SCAN OVERLAY ══ -->
 <div id="scan-overlay">
-  <div class="scan-video-wrap">
-    <video id="scan-video" autoplay playsinline muted></video>
-    <div class="scan-flash" id="scan-flash"></div>
-    <div class="scan-guide"><span></span></div>
-    <div class="scan-top-bar">
-      <h3>📷 Scanning…</h3>
-      <button class="scan-close-btn" onclick="stopScan()">✕</button>
+
+  <!-- Phase 1: Live scanning -->
+  <div id="scan-phase-live">
+    <div class="scan-video-wrap">
+      <video id="scan-video" autoplay playsinline muted></video>
+      <div class="scan-flash" id="scan-flash"></div>
+      <div class="scan-guide"><span></span></div>
+      <div class="scan-top-bar">
+        <h3 id="scan-live-title">📷 Scanning…</h3>
+        <button class="scan-close-btn" onclick="closeScan()">✕</button>
+      </div>
+    </div>
+    <div class="scan-status-bar">
+      <div class="scan-pulse-dot" id="scan-pulse"></div>
+      <span id="scan-status-text">Starting camera…</span>
+      <span class="scan-count-badge" id="scan-count-badge">0 found</span>
+    </div>
+    <div class="scan-live-list" id="scan-live-list">
+      <div class="scan-empty-hint">Point the camera at your fridge or pantry shelf</div>
+    </div>
+    <div class="scan-live-footer">
+      <button class="btn-secondary" style="flex:1" onclick="closeScan()">Cancel</button>
+      <button class="btn-primary" style="flex:2" onclick="goToReview()">Stop &amp; Review</button>
     </div>
   </div>
 
-  <div class="scan-status-bar">
-    <div class="scan-pulse-dot" id="scan-pulse"></div>
-    <span id="scan-status-text">Starting camera…</span>
-    <span class="scan-count-badge" id="scan-count-badge">0 found</span>
+  <!-- Phase 2: Review before adding -->
+  <div id="scan-phase-review">
+    <div class="review-header">
+      <h3 id="review-title">Review Items</h3>
+      <button class="scan-close-btn" onclick="closeScan()">✕</button>
+    </div>
+    <div class="review-list" id="review-list"></div>
+    <div class="review-footer">
+      <button class="btn-secondary" onclick="closeScan()">Cancel</button>
+      <button class="btn-primary" id="review-add-btn" onclick="addSelectedScanItems()">Add to Pantry</button>
+    </div>
   </div>
 
-  <div class="scan-list-wrap" id="scan-list-wrap">
-    <div class="scan-empty-hint" id="scan-empty-hint">Point the camera at your fridge or pantry shelf</div>
-  </div>
-
-  <div class="scan-bottom-bar" id="scan-bottom-bar">
-    <button class="btn-secondary" onclick="stopScan()">Cancel</button>
-    <button class="btn-primary" id="scan-add-btn" onclick="addSelectedScanItems()">Add Selected to Pantry</button>
-  </div>
 </div>
 
 <!-- ══ ITEM MODAL ══ -->
@@ -266,7 +256,7 @@
     <input type="hidden" id="modal-id">
     <div class="form-group">
       <label class="form-label">Item Name</label>
-      <input class="form-input" id="f-name" type="text" placeholder="e.g. Milk">
+      <input class="form-input" id="f-name" type="text" placeholder="e.g. Pams White Rice">
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -283,18 +273,9 @@
       </div>
     </div>
     <div class="form-row-3">
-      <div class="form-group">
-        <label class="form-label">On Hand</label>
-        <input class="form-input" id="f-onhand" type="number" min="0" step="0.5" placeholder="0">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Min Stock</label>
-        <input class="form-input" id="f-threshold" type="number" min="0" step="0.5" placeholder="2">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Restock To</label>
-        <input class="form-input" id="f-restock" type="number" min="0" step="0.5" placeholder="4">
-      </div>
+      <div class="form-group"><label class="form-label">On Hand</label><input class="form-input" id="f-onhand" type="number" min="0" step="0.5" placeholder="0"></div>
+      <div class="form-group"><label class="form-label">Min Stock</label><input class="form-input" id="f-threshold" type="number" min="0" step="0.5" placeholder="2"></div>
+      <div class="form-group"><label class="form-label">Restock To</label><input class="form-input" id="f-restock" type="number" min="0" step="0.5" placeholder="4"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
@@ -316,52 +297,39 @@
     <p style="font-size:.78rem;color:var(--text-muted);margin-bottom:16px">Camera scan uses Claude AI — add <code style="background:var(--grey-light);padding:1px 5px;border-radius:4px">CLAUDE_API_KEY</code> to Apps Script Script Properties.</p>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
-      <button class="btn-primary" onclick="saveSettings()">Save</button>
+      <button class="btn-primary" onclick="saveSettings()">Save URL</button>
     </div>
-    <div style="margin-top:12px">
-      <button class="btn-danger" style="width:100%" onclick="confirmClear()">Reset &amp; reconnect</button>
-    </div>
-    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v2.2</div>
+    <button class="btn-danger-full" onclick="clearAllItems()">Clear All Pantry Items</button>
+    <button class="btn-danger-full" style="margin-top:8px" onclick="confirmReset()">Reset &amp; Reconnect</button>
+    <div style="text-align:center;font-size:.75rem;color:var(--text-muted);margin-top:20px">Home Pantry v2.3</div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ── Config ─────────────────────────────────────────────────────────────────
 const DEFAULT_URL = 'https://script.google.com/macros/s/AKfycbw3NfPBm_Hy9_VNyMb3hnce52rtSzQ5r9N2LO-38_XwUS4l2DKjFu57XiHYH9fQH2gL/exec';
 let SCRIPT_URL = localStorage.getItem('pantry_script_url') || DEFAULT_URL;
-
 const CATEGORIES = ['Dairy','Meat & Fish','Produce','Pantry','Frozen','Bakery','Drinks','Cleaning','Personal Care','Other'];
 
-// ── State ──────────────────────────────────────────────────────────────────
-let items      = {};
-let shopBuyQty = {};
-let shopTicked = {};
+let items = {}, shopBuyQty = {}, shopTicked = {};
 
 // ── Boot ───────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
-  populateCatFilter();
-  fetchItems();
-  setInterval(fetchItems, 10000);
+  populateCatFilter(); fetchItems(); setInterval(fetchItems, 10000);
 });
 
-// ── Data ───────────────────────────────────────────────────────────────────
 async function fetchItems() {
   setSyncStatus('syncing');
   try {
-    const res  = await fetch(SCRIPT_URL);
+    const res = await fetch(SCRIPT_URL);
     const data = await res.json();
     const fresh = {};
     (data.items || []).forEach(it => { fresh[it.id] = it; });
     Object.keys(shopTicked).forEach(id => {
-      if (fresh[id] && fresh[id].onHand >= fresh[id].threshold) {
-        delete shopTicked[id]; delete shopBuyQty[id];
-      }
+      if (fresh[id] && fresh[id].onHand >= fresh[id].threshold) { delete shopTicked[id]; delete shopBuyQty[id]; }
     });
-    items = fresh;
-    renderPantry(); renderShop();
-    setSyncStatus('ok');
+    items = fresh; renderPantry(); renderShop(); setSyncStatus('ok');
   } catch { setSyncStatus('offline'); }
 }
 
@@ -373,64 +341,47 @@ async function apiPost(body) {
 }
 
 function setSyncStatus(state) {
-  document.getElementById('sync-dot').className = 'sync-dot' +
-    (state === 'offline' ? ' offline' : state === 'syncing' ? ' syncing' : '');
-  document.getElementById('sync-label').textContent =
-    state === 'ok' ? 'Synced' : state === 'syncing' ? 'Syncing…' : 'Offline';
+  document.getElementById('sync-dot').className = 'sync-dot' + (state==='offline'?' offline':state==='syncing'?' syncing':'');
+  document.getElementById('sync-label').textContent = state==='ok'?'Synced':state==='syncing'?'Syncing…':'Offline';
 }
 
-// ── Tabs ───────────────────────────────────────────────────────────────────
 window.switchTab = function(tab) {
   ['pantry','shop'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
-    document.getElementById('view-' + t).classList.toggle('active', t === tab);
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.getElementById('view-'+t).classList.toggle('active', t===tab);
   });
-  document.getElementById('fab').style.display = tab === 'pantry' ? 'flex' : 'none';
+  document.getElementById('fab').style.display = tab==='pantry'?'flex':'none';
 };
 
 function populateCatFilter() {
   const sel = document.getElementById('cat-filter');
-  CATEGORIES.forEach(c => {
-    const o = document.createElement('option'); o.value = c; o.textContent = c; sel.appendChild(o);
-  });
+  CATEGORIES.forEach(c => { const o = document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
 }
 
-// ── Pantry render ──────────────────────────────────────────────────────────
+// ── Pantry ─────────────────────────────────────────────────────────────────
 window.renderPantry = function() {
   const search = document.getElementById('search-input').value.toLowerCase();
   const catF   = document.getElementById('cat-filter').value;
   const list   = document.getElementById('pantry-list');
-  const filtered = Object.entries(items).filter(([,v]) =>
-    (!catF || v.cat === catF) && (!search || v.name.toLowerCase().includes(search))
-  );
+  const filtered = Object.entries(items).filter(([,v]) => (!catF||v.cat===catF) && (!search||v.name.toLowerCase().includes(search)));
   if (!filtered.length) {
-    list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-muted)">
-      <div style="font-size:2.5rem;margin-bottom:12px">🥫</div>
-      <div style="font-weight:600">No items yet</div>
-      <div style="font-size:.85rem;margin-top:6px">Tap + to add, or use 📷 Scan</div></div>`;
+    list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:12px">🥫</div><div style="font-weight:600">No items yet</div><div style="font-size:.85rem;margin-top:6px">Tap + to add, or use 📷 Scan</div></div>`;
     return;
   }
   const byCat = {};
-  filtered.forEach(([id,v]) => { (byCat[v.cat] = byCat[v.cat] || []).push([id,v]); });
-  list.innerHTML = CATEGORIES.filter(c => byCat[c]).map(cat => `
-    <div class="cat-section">
-      <div class="cat-header">${cat}</div>
-      ${byCat[cat].map(([id,v]) => pantryCard(id,v)).join('')}
-    </div>`).join('');
+  filtered.forEach(([id,v]) => { (byCat[v.cat]=byCat[v.cat]||[]).push([id,v]); });
+  list.innerHTML = CATEGORIES.filter(c=>byCat[c]).map(cat => `
+    <div class="cat-section"><div class="cat-header">${cat}</div>
+    ${byCat[cat].map(([id,v])=>pantryCard(id,v)).join('')}</div>`).join('');
 };
 
 function pantryCard(id, v) {
-  const pct   = v.threshold > 0 ? v.onHand / v.threshold : 1;
-  const cls   = pct <= 0 ? 'low' : pct < 1 ? 'warn' : 'ok';
-  const badge = pct <= 0 ? `<span class="status-badge badge-low">OUT</span>`
-              : pct < 1  ? `<span class="status-badge badge-warn">LOW</span>`
-              :             `<span class="status-badge badge-ok">OK</span>`;
+  const pct = v.threshold>0 ? v.onHand/v.threshold : 1;
+  const cls = pct<=0?'low':pct<1?'warn':'ok';
+  const badge = pct<=0?`<span class="status-badge badge-low">OUT</span>`:pct<1?`<span class="status-badge badge-warn">LOW</span>`:`<span class="status-badge badge-ok">OK</span>`;
   return `<div class="item-card ${cls}">
-    <div class="item-info">
-      <div class="item-name">${esc(v.name)}</div>
-      <div class="item-meta">Min: ${v.threshold} ${esc(v.unit)} · Restock to: ${v.restock} ${esc(v.unit)}</div>
-      ${badge}
-    </div>
+    <div class="item-info"><div class="item-name">${esc(v.name)}</div>
+    <div class="item-meta">Min: ${v.threshold} ${esc(v.unit)} · Restock to: ${v.restock} ${esc(v.unit)}</div>${badge}</div>
     <div class="item-qty">
       <button class="qty-btn" onclick="adjustOnHand('${id}',-0.5)">−</button>
       <div class="qty-display">${v.onHand}<br><span style="font-size:.65rem;color:var(--text-muted);font-weight:400">${esc(v.unit)}</span></div>
@@ -442,32 +393,30 @@ function pantryCard(id, v) {
 
 window.adjustOnHand = async function(id, delta) {
   const v = items[id]; if (!v) return;
-  items[id] = { ...v, onHand: Math.max(0, +(v.onHand + delta).toFixed(2)) };
+  items[id] = { ...v, onHand: Math.max(0, +(v.onHand+delta).toFixed(2)) };
   renderPantry(); renderShop();
-  await apiPost({ action: 'save', item: { id, ...items[id] } });
+  await apiPost({ action:'save', item:{ id, ...items[id] } });
 };
 
-// ── Shopping list ──────────────────────────────────────────────────────────
+// ── Shopping ───────────────────────────────────────────────────────────────
 window.renderShop = function() {
   const shopItems = Object.entries(items).filter(([,v]) => v.onHand < v.threshold);
-  const list      = document.getElementById('shop-list');
+  const list = document.getElementById('shop-list');
   const doneCount = shopItems.filter(([id]) => shopTicked[id]).length;
-  document.getElementById('shop-badge').textContent = shopItems.length > 0 ? ` (${shopItems.length - doneCount})` : '';
-  document.getElementById('shop-count').textContent      = shopItems.length;
+  document.getElementById('shop-badge').textContent = shopItems.length>0?` (${shopItems.length-doneCount})`:'';
+  document.getElementById('shop-count').textContent = shopItems.length;
   document.getElementById('shop-done-count').textContent = doneCount;
   if (!shopItems.length) {
-    list.innerHTML = `<div class="shop-empty"><div class="shop-empty-icon">✅</div>
-      <div class="shop-empty-text">All stocked up!</div>
-      <div class="shop-empty-sub">Items appear here when stock falls below minimum</div></div>`;
+    list.innerHTML = `<div class="shop-empty"><div class="shop-empty-icon">✅</div><div class="shop-empty-text">All stocked up!</div><div class="shop-empty-sub">Items appear here when stock falls below minimum</div></div>`;
     return;
   }
-  shopItems.sort(([a],[b]) => (shopTicked[a] ? 1 : 0) - (shopTicked[b] ? 1 : 0));
+  shopItems.sort(([a],[b]) => (shopTicked[a]?1:0)-(shopTicked[b]?1:0));
   list.innerHTML = shopItems.map(([id,v]) => {
-    const needed = Math.max(0, +(v.restock - v.onHand).toFixed(2));
-    if (shopBuyQty[id] === undefined) shopBuyQty[id] = needed;
+    const needed = Math.max(0, +(v.restock-v.onHand).toFixed(2));
+    if (shopBuyQty[id]===undefined) shopBuyQty[id] = needed;
     const ticked = !!shopTicked[id];
-    return `<div class="shop-item ${ticked ? 'done' : ''}">
-      <div class="shop-checkbox ${ticked ? 'checked' : ''}" onclick="purchaseItem('${id}')"></div>
+    return `<div class="shop-item ${ticked?'done':''}">
+      <div class="shop-checkbox ${ticked?'checked':''}" onclick="purchaseItem('${id}')"></div>
       <div class="shop-item-body">
         <div class="shop-item-name">${esc(v.name)}</div>
         <div class="shop-item-sub">${v.cat} · Have ${v.onHand} ${esc(v.unit)} · Need ${needed} ${esc(v.unit)}</div>
@@ -480,58 +429,67 @@ window.renderShop = function() {
           </div>
           <span class="qty-unit">${esc(v.unit)}</span>
         </div>
-        ${!ticked ? `<div class="tick-hint">↑ Adjust then tick to add to pantry</div>`
-                  : `<div class="tick-hint" style="color:var(--text-muted)">Added to pantry ✓</div>`}
+        ${!ticked?`<div class="tick-hint">↑ Adjust then tick to add to pantry</div>`:`<div class="tick-hint" style="color:var(--text-muted)">Added to pantry ✓</div>`}
       </div>
     </div>`;
   }).join('');
 };
 
 window.changeShopQty = function(id, delta) {
-  shopBuyQty[id] = Math.max(0, +((shopBuyQty[id] || 0) + delta).toFixed(2));
-  const el = document.getElementById('sqty-' + id);
+  shopBuyQty[id] = Math.max(0, +((shopBuyQty[id]||0)+delta).toFixed(2));
+  const el = document.getElementById('sqty-'+id);
   if (el) el.textContent = shopBuyQty[id];
 };
 
 window.purchaseItem = async function(id) {
   if (shopTicked[id]) return;
   const v = items[id]; if (!v) return;
-  const qty    = shopBuyQty[id] !== undefined ? shopBuyQty[id] : Math.max(0, +(v.restock - v.onHand).toFixed(2));
+  const qty = shopBuyQty[id]!==undefined ? shopBuyQty[id] : Math.max(0,+(v.restock-v.onHand).toFixed(2));
   shopTicked[id] = true;
-  items[id] = { ...v, onHand: +(v.onHand + qty).toFixed(2) };
+  items[id] = { ...v, onHand: +(v.onHand+qty).toFixed(2) };
   renderPantry(); renderShop();
   toast(`✓ ${qty} ${v.unit} of ${v.name} added to pantry`);
-  await apiPost({ action: 'save', item: { id, ...items[id] } });
+  await apiPost({ action:'save', item:{ id, ...items[id] } });
 };
 
-// ── VIDEO SCAN ─────────────────────────────────────────────────────────────
-let scanStream   = null;
-let scanTimer    = null;
-let scanActive   = false;
-let foundItems   = [];   // { name, cat, unit, checked, existing }
-let scanPending  = false;
+// ── SCAN ───────────────────────────────────────────────────────────────────
+let scanStream  = null;
+let scanTimer   = null;
+let scanActive  = false;
+let scanPending = false;
+let foundItems  = [];
 
 window.startScan = async function() {
-  foundItems  = [];
-  scanActive  = true;
+  // Full reset every time
+  scanActive  = false;
+  scanPending = false;
+  clearTimeout(scanTimer);
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+
+  foundItems = [];
+  document.getElementById('scan-phase-live').style.display   = 'flex';
+  document.getElementById('scan-phase-review').style.display = 'none';
+  document.getElementById('scan-live-list').innerHTML = '<div class="scan-empty-hint">Point the camera at your fridge or pantry shelf</div>';
+  document.getElementById('scan-count-badge').textContent = '0 found';
   document.getElementById('scan-overlay').classList.add('open');
-  document.getElementById('scan-bottom-bar').classList.remove('visible');
-  document.getElementById('scan-empty-hint').style.display = 'block';
-  renderScanList();
-  updateScanStatus('Starting camera…', true);
+  setScanPulse(false);
+  document.getElementById('scan-status-text').textContent = 'Starting camera…';
 
   try {
     scanStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+      video: { facingMode:'environment', width:{ ideal:1280 }, height:{ ideal:720 } }
     });
     const video = document.getElementById('scan-video');
     video.srcObject = scanStream;
     await video.play();
-    updateScanStatus('Scanning — move slowly across shelves', true);
+    scanActive = true;
+    setScanPulse(true);
+    document.getElementById('scan-status-text').textContent = 'Scanning — sweep slowly across shelves';
     scheduleScanFrame();
   } catch(err) {
-    updateScanStatus('Camera access denied', false);
-    alert('Camera access is required for scanning. Please allow access in your browser settings.');
+    document.getElementById('scan-status-text').textContent = 'Camera access denied';
+    setScanPulse(false);
+    setTimeout(() => alert('Camera access is required. Please allow it in your browser settings.'), 100);
   }
 };
 
@@ -545,14 +503,11 @@ async function captureFrame() {
   const video = document.getElementById('scan-video');
   if (!video.videoWidth) { scheduleScanFrame(); return; }
 
-  // Flash
   const flash = document.getElementById('scan-flash');
   flash.classList.add('pop');
   setTimeout(() => flash.classList.remove('pop'), 150);
 
-  // Capture frame
-  const maxPx  = 960;
-  const scale  = Math.min(1, maxPx / Math.max(video.videoWidth, video.videoHeight));
+  const maxPx = 960, scale = Math.min(1, maxPx/Math.max(video.videoWidth, video.videoHeight));
   const canvas = document.createElement('canvas');
   canvas.width  = Math.round(video.videoWidth  * scale);
   canvas.height = Math.round(video.videoHeight * scale);
@@ -561,7 +516,7 @@ async function captureFrame() {
 
   scanPending = true;
   try {
-    const result = await apiPost({ action: 'scanImage', image: base64, mediaType: 'image/jpeg' });
+    const result = await apiPost({ action:'scanImage', image:base64, mediaType:'image/jpeg' });
     if (result.items && result.items.length) mergeFoundItems(result.items);
   } catch(e) { /* silent */ }
   scanPending = false;
@@ -569,119 +524,116 @@ async function captureFrame() {
 }
 
 function mergeFoundItems(newItems) {
-  // Keys of items already in the pantry
-  const inPantryKeys = new Set(Object.values(items).map(i => i.name.toLowerCase().trim()));
-  // Keys already found this scan session
-  const inScanKeys   = new Set(foundItems.map(i => i.name.toLowerCase().trim()));
-
+  const inPantry = new Set(Object.values(items).map(i => i.name.toLowerCase().trim()));
+  const inScan   = new Set(foundItems.map(i => i.name.toLowerCase().trim()));
   let added = false;
   newItems.forEach(it => {
     const key = it.name.toLowerCase().trim();
-    if (inScanKeys.has(key)) return;   // already listed this session
-    inScanKeys.add(key);
-    foundItems.push({
-      name:     it.name,
-      cat:      it.cat  || 'Other',
-      unit:     it.unit || 'each',
-      checked:  !inPantryKeys.has(key),  // pre-tick new items, leave existing unticked
-      existing: inPantryKeys.has(key)
-    });
+    if (inScan.has(key)) return;
+    inScan.add(key);
+    foundItems.push({ name:it.name, cat:it.cat||'Other', unit:it.unit||'each', checked:!inPantry.has(key), existing:inPantry.has(key) });
     added = true;
   });
-  if (added) renderScanList();
+  if (added) renderLiveList();
 }
 
-function renderScanList() {
-  const wrap  = document.getElementById('scan-list-wrap');
-  const hint  = document.getElementById('scan-empty-hint');
+function renderLiveList() {
+  const wrap  = document.getElementById('scan-live-list');
   const badge = document.getElementById('scan-count-badge');
-  const bar   = document.getElementById('scan-bottom-bar');
-  const btn   = document.getElementById('scan-add-btn');
+  badge.textContent = foundItems.length === 0 ? '0 found' : `${foundItems.length} found`;
+  if (!foundItems.length) { wrap.innerHTML = '<div class="scan-empty-hint">Point the camera at your fridge or pantry shelf</div>'; return; }
+  wrap.innerHTML = foundItems.map((it,i) => scanRowHtml(it,i,'live')).join('');
+}
 
-  const total    = foundItems.length;
-  const checked  = foundItems.filter(i => i.checked && !i.existing).length;
-  badge.textContent = total === 0 ? '0 found' : `${total} found`;
-
-  if (total === 0) { hint.style.display = 'block'; bar.classList.remove('visible'); return; }
-  hint.style.display = 'none';
-  bar.classList.add('visible');
-  btn.textContent = checked > 0 ? `Add ${checked} Item${checked !== 1 ? 's' : ''} to Pantry` : 'Add Selected to Pantry';
-
-  // Group by existing / new
+function renderReviewList() {
+  const wrap = document.getElementById('review-list');
+  const btn  = document.getElementById('review-add-btn');
   const newItems = foundItems.filter(i => !i.existing);
   const oldItems = foundItems.filter(i =>  i.existing);
+  const checkedCount = newItems.filter(i => i.checked).length;
+
+  btn.textContent = checkedCount > 0 ? `Add ${checkedCount} Item${checkedCount!==1?'s':''} to Pantry` : 'Add Selected to Pantry';
+  document.getElementById('review-title').textContent = `Review — ${foundItems.length} item${foundItems.length!==1?'s':''} found`;
 
   let html = '';
+  if (!foundItems.length) { wrap.innerHTML = '<div class="scan-empty-hint" style="padding:40px 0">No items were detected</div>'; return; }
   if (newItems.length) {
     html += `<div class="scan-list-header">New items (${newItems.length})</div>`;
-    html += newItems.map((it, ri) => scanRow(it, foundItems.indexOf(it))).join('');
+    html += newItems.map(it => scanRowHtml(it, foundItems.indexOf(it), 'review')).join('');
   }
   if (oldItems.length) {
-    html += `<div class="scan-list-header" style="margin-top:${newItems.length ? 12 : 0}px">Already in pantry (${oldItems.length})</div>`;
-    html += oldItems.map(it => scanRow(it, foundItems.indexOf(it))).join('');
+    html += `<div class="scan-list-header" style="margin-top:${newItems.length?14:0}px">Already in pantry (${oldItems.length})</div>`;
+    html += oldItems.map(it => scanRowHtml(it, foundItems.indexOf(it), 'review')).join('');
   }
   wrap.innerHTML = html;
 }
 
-function scanRow(it, idx) {
-  const checkCls = it.existing ? 'scan-row-check' : `scan-row-check ${it.checked ? 'checked' : ''}`;
+function scanRowHtml(it, idx, phase) {
+  const isExisting = it.existing;
+  const checkCls = isExisting ? 'scan-row-check disabled' : `scan-row-check${it.checked?' checked':''}`;
+  const fn = phase === 'review' ? 'toggleReviewCheck' : 'toggleLiveCheck';
   return `<div class="scan-row">
-    <div class="${checkCls}" onclick="toggleScanCheck(${idx})"></div>
+    <div class="${checkCls}" onclick="${fn}(${idx})"></div>
     <div class="scan-row-info">
       <div class="scan-row-name">${esc(it.name)}</div>
-      <div class="scan-row-sub">${esc(it.cat)} · ${esc(it.unit)}
-        ${it.existing ? `<span class="scan-existing-tag"> · Already in pantry</span>` : ''}
-      </div>
+      <div class="scan-row-sub">${esc(it.cat)} · ${esc(it.unit)}${isExisting?` <span class="scan-existing-tag">· Already in pantry</span>`:''}</div>
     </div>
   </div>`;
 }
 
-window.toggleScanCheck = function(idx) {
-  if (foundItems[idx].existing) return;  // can't add what's already there
-  foundItems[idx].checked = !foundItems[idx].checked;
-  renderScanList();
+window.toggleLiveCheck   = function(idx) { if (!foundItems[idx].existing) { foundItems[idx].checked=!foundItems[idx].checked; renderLiveList(); } };
+window.toggleReviewCheck = function(idx) { if (!foundItems[idx].existing) { foundItems[idx].checked=!foundItems[idx].checked; renderReviewList(); } };
+
+window.goToReview = function() {
+  // Stop scanning, switch to review phase
+  scanActive  = false;
+  scanPending = false;
+  clearTimeout(scanTimer);
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+  document.getElementById('scan-video').srcObject = null;
+  setScanPulse(false);
+
+  document.getElementById('scan-phase-live').style.display   = 'none';
+  document.getElementById('scan-phase-review').style.display = 'flex';
+  renderReviewList();
 };
 
 window.addSelectedScanItems = async function() {
   const toAdd = foundItems.filter(i => i.checked && !i.existing);
   if (!toAdd.length) { toast('No new items selected'); return; }
-
-  stopScan();
-
-  // Add all selected items with default values, save to Sheets
+  closeScan();
   for (const it of toAdd) {
     const id   = crypto.randomUUID();
-    const item = { id, name: it.name, cat: it.cat, unit: it.unit, onHand: 0, threshold: 1, restock: 2 };
+    const item = { id, name:it.name, cat:it.cat, unit:it.unit, onHand:0, threshold:1, restock:2 };
     items[id]  = item;
-    await apiPost({ action: 'save', item });
+    await apiPost({ action:'save', item });
   }
-
   renderPantry(); renderShop();
-  toast(`✓ ${toAdd.length} item${toAdd.length !== 1 ? 's' : ''} added — tap ✏️ to set quantities`);
+  toast(`✓ ${toAdd.length} item${toAdd.length!==1?'s':''} added — tap ✏️ to set quantities`);
 };
 
-window.stopScan = function() {
-  scanActive = false;
+window.closeScan = function() {
+  scanActive  = false;
+  scanPending = false;
   clearTimeout(scanTimer);
   if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
-  document.getElementById('scan-video').srcObject = null;
+  const video = document.getElementById('scan-video');
+  video.srcObject = null;
   document.getElementById('scan-overlay').classList.remove('open');
-  document.getElementById('scan-bottom-bar').classList.remove('visible');
   foundItems = [];
 };
 
-function updateScanStatus(text, active) {
-  document.getElementById('scan-status-text').textContent = text;
-  document.getElementById('scan-pulse').className = 'scan-pulse-dot' + (active ? '' : ' idle');
+function setScanPulse(active) {
+  document.getElementById('scan-pulse').className = 'scan-pulse-dot' + (active?'':' idle');
 }
 
 // ── Item modal ─────────────────────────────────────────────────────────────
-window.openAddModal = function(prefill = {}) {
+window.openAddModal = function(pre={}) {
   document.getElementById('modal-title').textContent = 'Add Item';
   document.getElementById('modal-id').value = '';
-  document.getElementById('f-name').value      = prefill.name || '';
-  document.getElementById('f-cat').value       = prefill.cat  || 'Pantry';
-  document.getElementById('f-unit').value      = prefill.unit || '';
+  document.getElementById('f-name').value      = pre.name||'';
+  document.getElementById('f-cat').value       = pre.cat||'Pantry';
+  document.getElementById('f-unit').value      = pre.unit||'';
   document.getElementById('f-onhand').value    = '';
   document.getElementById('f-threshold').value = '';
   document.getElementById('f-restock').value   = '';
@@ -709,57 +661,41 @@ window.closeModal = function() { document.getElementById('item-modal').classList
 window.saveItem = async function() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { alert('Item name required'); return; }
-  const id   = document.getElementById('modal-id').value || crypto.randomUUID();
-  const item = {
-    id, name,
-    cat:       document.getElementById('f-cat').value,
-    unit:      document.getElementById('f-unit').value.trim() || 'each',
-    onHand:    parseFloat(document.getElementById('f-onhand').value)    || 0,
-    threshold: parseFloat(document.getElementById('f-threshold').value) || 0,
-    restock:   parseFloat(document.getElementById('f-restock').value)   || 0,
-  };
-  items[id] = item;
-  renderPantry(); renderShop(); closeModal();
-  await apiPost({ action: 'save', item });
-  toast('Saved ' + name);
+  const id = document.getElementById('modal-id').value || crypto.randomUUID();
+  const item = { id, name, cat:document.getElementById('f-cat').value, unit:document.getElementById('f-unit').value.trim()||'each', onHand:parseFloat(document.getElementById('f-onhand').value)||0, threshold:parseFloat(document.getElementById('f-threshold').value)||0, restock:parseFloat(document.getElementById('f-restock').value)||0 };
+  items[id] = item; renderPantry(); renderShop(); closeModal();
+  await apiPost({ action:'save', item }); toast('Saved '+name);
 };
 
 window.deleteItem = async function() {
   const id = document.getElementById('modal-id').value; if (!id) return;
   if (!confirm(`Delete "${items[id]?.name}"?`)) return;
   delete items[id]; renderPantry(); renderShop(); closeModal();
-  await apiPost({ action: 'delete', id });
-  toast('Deleted');
+  await apiPost({ action:'delete', id }); toast('Deleted');
 };
 
 // ── Settings ───────────────────────────────────────────────────────────────
-window.showSettings = function() {
-  document.getElementById('settings-url').value = SCRIPT_URL;
-  document.getElementById('settings-modal').classList.add('open');
-};
+window.showSettings = function() { document.getElementById('settings-url').value = SCRIPT_URL; document.getElementById('settings-modal').classList.add('open'); };
 window.closeSettings = function() { document.getElementById('settings-modal').classList.remove('open'); };
-window.saveSettings  = function() {
+window.saveSettings = function() {
   const url = document.getElementById('settings-url').value.trim();
   if (url) { localStorage.setItem('pantry_script_url', url); SCRIPT_URL = url; }
   closeSettings(); fetchItems(); toast('URL updated');
 };
-window.confirmClear = function() {
-  if (!confirm('Clear saved URL and reload?')) return;
-  localStorage.removeItem('pantry_script_url'); location.reload();
+window.confirmReset = function() { if (!confirm('Clear saved URL and reload?')) return; localStorage.removeItem('pantry_script_url'); location.reload(); };
+
+window.clearAllItems = async function() {
+  if (!confirm('Delete ALL pantry items? This cannot be undone.')) return;
+  closeSettings();
+  const result = await apiPost({ action: 'clearAll' });
+  if (result.ok) { items = {}; renderPantry(); renderShop(); toast('Pantry cleared'); }
+  else toast('Error clearing pantry');
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-window.toast = function(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-};
-document.querySelectorAll('.modal-overlay').forEach(o =>
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); })
-);
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+window.toast = function(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); };
+document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', e => { if(e.target===o) o.classList.remove('open'); }));
 </script>
 </body>
 </html>
